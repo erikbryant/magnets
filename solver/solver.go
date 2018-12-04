@@ -238,7 +238,7 @@ func (cbs CBS) doubleSingle(game magnets.Game) {
 
 }
 
-// resolveNeighbors() propagates any constraint a cell has (like it can only be negative or neutral) to its neighbor (which can then only be positive or neutral).
+// resolveNeighbors() propagates any constraint a cell has (like it can only be negative) to its neighbor (which can then only be positive).
 func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
@@ -306,10 +306,8 @@ func (cbs CBS) validate(game magnets.Game) {
 func Solve(game magnets.Game) {
 	cbs := new(game)
 
-	attempt := 0
 	for {
 		dirty = false
-		attempt++ // TODO: Something is unstable in some solver cases and gets into a state-flipping loop. Figure out what that is and get rid of this counter. Hint: it shows up most when calling delete().
 
 		cbs.validate(game)
 		cbs.justOne(game)
@@ -318,7 +316,7 @@ func Solve(game magnets.Game) {
 		cbs.doubleSingle(game)
 		cbs.needAll(game)
 
-		if !dirty || attempt > 10000 {
+		if !dirty {
 			break
 		}
 	}
