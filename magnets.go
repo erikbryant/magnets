@@ -13,16 +13,74 @@ func stressTest() {
 	solved := 0
 
 	for {
-		game := magnets.New(rand.Intn(6)+1, rand.Intn(6)+2)
+		gamez := magnets.New(rand.Intn(15)+2, rand.Intn(15)+2)
+
+		// --- cut here ---
+
+		// TODO: There is something wrong with board creation. magnets.New()
+		// sometimes (like 9 in 100,000 calls) returns data that is not
+		// consistent and causes the solver to go into an infinite loop.
+		//
+		// Debugging of the infinite loop states show that the solver
+		// has put invalid magnet orientations and has moved where the
+		// neutrals are supposed to be.
+		//
+		// Serializing and deserializing the new board before calling the
+		// solver alleviates the problem.
+		//
+		// Another discovery while debugging. Trying to solve a New() board
+		// results in about an 18% success rate. Serializing first results in
+		// about a 100% solver success rate. So, there may be more problems
+		// than just the one with the New() boards.
+
+		if !gamez.Valid() {
+			fmt.Println("Game is not valid")
+			gamez.Print()
+			return
+		}
+
+		s, ok := gamez.Serialize()
+		if !ok {
+			fmt.Println("Unable to serialize")
+			gamez.Print()
+		}
+		game, ok2 := magnets.Deserialize(s)
+		if !ok2 {
+			fmt.Println("Unable to deserialize:", s)
+		}
+
+		// --- cut here ---
+
 		games++
 		solver.Solve(game)
 		if game.Solved() {
 			solved++
+		} else {
+			ser, _ := game.Serialize()
+			fmt.Println("UNEXPECTED! Could not solve:", ser)
+			return
 		}
-		if games%100 == 0 {
+		if games%10000 == 0 {
 			pctSolved := int(float64(solved) / float64(games) * 100.0)
 			fmt.Printf("Played: %d Solved: %d (%d%%)\n", games, solved, pctSolved)
 		}
+	}
+}
+
+// deserializer takes a game in serial form and tries to solve it.
+func deserializer(s string) {
+	game, ok := magnets.Deserialize(s)
+	if !ok {
+		fmt.Printf("Could not deserialize!", s)
+		return
+	}
+
+	solver.Solve(game)
+	if game.Solved() {
+		fmt.Println("Solved!")
+	} else {
+		fmt.Println("Could not solve:", s)
+		game.Print()
 	}
 }
 
@@ -39,25 +97,11 @@ func solvable(width, height int) {
 	}
 }
 
-// deserializer takes a game in serial form and tries to solve it.
-func deserializer(s string) {
-	// s = "3x3:201,102,120,111,LRTT*BBLR"
-	// s = "2x50:jh,01111110101001111000011110111110011111011101111111,me,01111101101001110100101110111101011111011011111111,LRTTBBLRLRLRTTBBLRLRLRTTBBTTBBLRTTBBLRLRTTBBLRTTBBLRLRLRTTBBTTBBLRLRTTBBTTBBLRTTBBTTBBTTBBTTBBLRTTBB"
-	// s = "3x3:112,112,121,121,*LRTLRBLR"
-	s = "3x3:111,021,111,111,LRTTTBBB*"
-
-	game, ok := magnets.Deserialize(s)
-	if !ok {
-		fmt.Printf("Could not deserialized!", s)
-		return
-	}
-	game.Print()
-	solver.Solve(game)
-	game.Print()
-}
-
 func main() {
-	stressTest()
+	// stressTest()
+
+	// This game is solvable, but the solver cannot solve it yet.
+	deserializer("3x3:201,102,120,111,LRTT*BBLR")
+
 	// solvable(7, 7)
-	// deserializer("3x3:112,112,121,121,*LRTLRBLR")
 }
