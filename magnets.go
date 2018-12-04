@@ -27,11 +27,6 @@ func stressTest() {
 		//
 		// Serializing and deserializing the new board before calling the
 		// solver alleviates the problem.
-		//
-		// Another discovery while debugging. Trying to solve a New() board
-		// results in about an 18% success rate. Serializing first results in
-		// about a 100% solver success rate. So, there may be more problems
-		// than just the one with the New() boards.
 
 		if !gamez.Valid() {
 			fmt.Println("Game is not valid")
@@ -55,10 +50,6 @@ func stressTest() {
 		solver.Solve(game)
 		if game.Solved() {
 			solved++
-		} else {
-			ser, _ := game.Serialize()
-			fmt.Println("UNEXPECTED! Could not solve:", ser)
-			return
 		}
 		if games%10000 == 0 {
 			pctSolved := int(float64(solved) / float64(games) * 100.0)
@@ -98,10 +89,10 @@ func solvable(width, height int) {
 }
 
 func main() {
-	// stressTest()
+	stressTest()
 
 	// This game is solvable, but the solver cannot solve it yet.
-	deserializer("3x3:201,102,120,111,LRTT*BBLR")
+	// deserializer("3x3:201,102,120,111,LRTT*BBLR")
 
 	// solvable(7, 7)
 }
