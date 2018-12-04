@@ -151,12 +151,18 @@ func (l *Board) Equal(l2 Board) bool {
 	return true
 }
 
-func (l *Board) Print(name string) {
+func (l *Board) Print(name string, rowPos, rowNeg, colPos, colNeg []int) {
 	fmt.Printf("%s (%dx%d)\n", name, l.width, l.height)
 
 	fmt.Printf("     ")
 	for i := 0; i < l.width; i++ {
-		fmt.Printf("%1d", l.CountCol(i, common.Positive))
+		count := 0
+		if len(colPos) > 0 {
+			count = colPos[i]
+		} else {
+			count = l.CountCol(i, common.Positive)
+		}
+		fmt.Printf("%1d", count)
 	}
 	fmt.Printf("\n")
 
@@ -167,11 +173,23 @@ func (l *Board) Print(name string) {
 	fmt.Printf("\n")
 
 	for row := 0; row < l.height; row++ {
-		fmt.Printf("%2d | ", l.CountRow(row, common.Positive))
+		count := 0
+		if len(rowPos) > 0 {
+			count = rowPos[row]
+		} else {
+			count = l.CountRow(row, common.Positive)
+		}
+		fmt.Printf("%2d | ", count)
 		for _, cell := range l.cells[row] {
 			fmt.Printf("%c", cell)
 		}
-		fmt.Printf(" | %2d\n", l.CountRow(row, common.Negative))
+		count = 0
+		if len(rowNeg) > 0 {
+			count = rowNeg[row]
+		} else {
+			count = l.CountRow(row, common.Negative)
+		}
+		fmt.Printf(" | %2d\n", count)
 	}
 
 	fmt.Printf("     ")
@@ -182,7 +200,13 @@ func (l *Board) Print(name string) {
 
 	fmt.Printf("     ")
 	for i := 0; i < l.width; i++ {
-		fmt.Printf("%1d", l.CountCol(i, common.Negative))
+		count := 0
+		if len(colNeg) > 0 {
+			count = colNeg[i]
+		} else {
+			count = l.CountCol(i, common.Negative)
+		}
+		fmt.Printf("%1d", count)
 	}
 	fmt.Printf("\n")
 

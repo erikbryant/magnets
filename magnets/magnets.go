@@ -3,8 +3,8 @@ package magnets
 //
 // Definitions:
 //   Game - Each of the layers that makes up a playable game.
-//   Board -
-//   Cell - a single square in a given board.
+//   Board - A single layer. A grid r x c in dimension.
+//   Cell - A single square in a given board.
 //
 
 // TODO: Replace the printf's with err.
@@ -41,9 +41,9 @@ func init() {
 // Print() prints an ASCII representation of the board.
 func (game *Game) Print() {
 	fmt.Printf("\n")
-	game.frames.Print("Frames")
-	game.grid.Print("Grid")
-	game.Guess.Print("Guess")
+	game.frames.Print("Frames", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
+	game.grid.Print("Grid", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
+	game.Guess.Print("Guess", []int{}, []int{}, []int{}, []int{})
 }
 
 func (game *Game) Valid() bool {
@@ -312,9 +312,27 @@ func (game *Game) placePieces() {
 	}
 }
 
-// Solved() checks to see if the guess board is identical to the grid board.
+// Solved() checks to see if the guess board has a valid solution.
 func (game *Game) Solved() bool {
-	return game.grid.Equal(game.Guess)
+	for row := 0; row < game.Guess.Height(); row++ {
+		if game.Guess.CountRow(row, common.Positive) != game.rowPos[row] {
+			return false
+		}
+		if game.Guess.CountRow(row, common.Negative) != game.rowNeg[row] {
+			return false
+		}
+	}
+
+	for col := 0; col < game.Guess.Width(); col++ {
+		if game.Guess.CountCol(col, common.Positive) != game.colPos[col] {
+			return false
+		}
+		if game.Guess.CountCol(col, common.Negative) != game.colNeg[col] {
+			return false
+		}
+	}
+
+	return true
 }
 
 // makeGame() creates an empty game state.
