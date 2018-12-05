@@ -1,6 +1,18 @@
 package solver
 
 // This package implements a constraints-based solver.
+//
+// The CBS solver holds a matrix representation that mimics the playing grid.
+//
+// It first finds whether there are any walls on the playing grid. If there are,
+// it marks those in its representation as being walls.
+//
+// Then it marks the rest of the cells as having all of the possibilities (positive,
+// negative, or neutral).
+//
+// As the solver works through the information it is given it eliminates possibilities
+// as it proves them non-possible. When the list of possibilities for a cell drops to
+// just one, the solver sets that in the Guess grid as a known entity.
 
 import (
 	"../board"
@@ -15,7 +27,7 @@ var (
 	dirty = false
 )
 
-// new takes a game and returns a new constraint-based solver object for that game.
+// new takes a game and returns a new, initialized constraint-based solver object for that game.
 func new(game magnets.Game) CBS {
 	cbs := make(CBS, game.Guess.Height())
 
@@ -49,8 +61,9 @@ func new(game magnets.Game) CBS {
 
 // setFrame takes a coordinate and a polarity, sets that, and sets the other end of the frame to correspond.
 func (cbs CBS) setFrame(game magnets.Game, row, col int, r rune) {
-	oldR := game.Guess.Get(row, col)
-	if r != oldR {
+	rowEnd, colEnd := game.GetFrameEnd(row, col)
+
+	if r != game.Guess.Get(row, col) || common.Negate(r) != game.Guess.Get(rowEnd, colEnd) {
 		dirty = true
 	}
 
@@ -59,18 +72,11 @@ func (cbs CBS) setFrame(game magnets.Game, row, col int, r rune) {
 	cbs[row][col] = map[rune]bool{r: true}
 
 	// Set the other end of the frame.
-	rowEnd, colEnd := game.GetFrameEnd(row, col)
-
-	oldR = game.Guess.Get(rowEnd, colEnd)
-	if common.Negate(r) != oldR {
-		dirty = true
-	}
-
 	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
 	cbs[rowEnd][colEnd] = map[rune]bool{common.Negate(r): true}
 }
 
-func (cbs CBS) unset(row, col int, r rune) {
+func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	if val, ok := cbs[row][col][r]; ok && val {
 		dirty = true
 	}
@@ -78,7 +84,7 @@ func (cbs CBS) unset(row, col int, r rune) {
 	delete(cbs[row][col], r)
 }
 
-// justOne() iterates through all empty cells. For any that have just one possibility left in the cbs, it sets that frame.
+// justOne iterates through all empty cells. For any that have just one possibility left in the cbs, it sets that frame.
 func (cbs CBS) justOne(game magnets.Game) {
 	for cell := range game.Guess.Cells(common.Empty) {
 		row, col := cell.Unpack()
@@ -94,23 +100,24 @@ func (cbs CBS) justOne(game magnets.Game) {
 
 		cbs.setFrame(game, row, col, r)
 	}
-
-	return
 }
 
+// rowNeeds calculates how many of a given polarity are still needed in order to be complete.
 func rowNeeds(game magnets.Game, row int, r rune) int {
-	has := game.Guess.CountRow(row, r)
 	needs := game.CountRow(row, r)
+	has := game.Guess.CountRow(row, r)
 	return needs - has
 }
 
+// colNeeds calculates how many of a given polarity are still needed in order to be complete.
 func colNeeds(game magnets.Game, col int, r rune) int {
-	has := game.Guess.CountCol(col, r)
 	needs := game.CountCol(col, r)
+	has := game.Guess.CountCol(col, r)
 	return needs - has
 }
 
-func (cbs CBS) rowHas(game magnets.Game, row int, r rune) int {
+// rowHasSpaceFor counts how many *possible* locations are present for the given polarity.
+func (cbs CBS) rowHasSpaceFor(game magnets.Game, row int, r rune) int {
 	count := 0
 	for col := 0; col < game.Guess.Width(); col++ {
 		if cbs[row][col][r] {
@@ -120,7 +127,8 @@ func (cbs CBS) rowHas(game magnets.Game, row int, r rune) int {
 	return count
 }
 
-func (cbs CBS) colHas(game magnets.Game, col int, r rune) int {
+// colHasSpaceFor counts how many *possible* locations are present for the given polarity.
+func (cbs CBS) colHasSpaceFor(game magnets.Game, col int, r rune) int {
 	count := 0
 	for row := 0; row < game.Guess.Height(); row++ {
 		if cbs[row][col][r] {
@@ -132,9 +140,9 @@ func (cbs CBS) colHas(game magnets.Game, col int, r rune) int {
 
 func (cbs CBS) satisfied(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative, common.Neutral} {
-		// Row is satisfied in this category? Set those frames.
+		// Row is satisfied in this category? Set those frames. Clear this possibility elsewhere.
 		for row := 0; row < game.Guess.Height(); row++ {
-			if rowNeeds(game, row, category) == cbs.rowHas(game, row, category) {
+			if rowNeeds(game, row, category) == cbs.rowHasSpaceFor(game, row, category) {
 				for col := 0; col < game.Guess.Width(); col++ {
 					if cbs[row][col][category] {
 						cbs.setFrame(game, row, col, category)
@@ -142,9 +150,9 @@ func (cbs CBS) satisfied(game magnets.Game) {
 				}
 			}
 		}
-		// Col is satisfied in this category? Set those frames.
+		// Col is satisfied in this category? Set those frames. Clear this possibility elsewhere.
 		for col := 0; col < game.Guess.Width(); col++ {
-			if colNeeds(game, col, category) == cbs.colHas(game, col, category) {
+			if colNeeds(game, col, category) == cbs.colHasSpaceFor(game, col, category) {
 				for row := 0; row < game.Guess.Height(); row++ {
 					if cbs[row][col][category] {
 						cbs.setFrame(game, row, col, category)
@@ -157,7 +165,7 @@ func (cbs CBS) satisfied(game magnets.Game) {
 	return
 }
 
-// needAll() checks to see if the number of pos+neg needed is equal to the number of frames that are still undecided. If so, none of those frames can be neutral.
+// needAll checks to see if the number of pos+neg needed is equal to the number of frames that are still undecided. If so, none of those frames can be neutral.
 // NOTE: Once doubleSingle() is written this function will no longer be needed.
 func (cbs CBS) needAll(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative} {
@@ -183,7 +191,7 @@ func (cbs CBS) needAll(game magnets.Game) {
 			if needs == provides {
 				// All are needed for signs. None can be neutral.
 				for col := 0; col < game.Guess.Width(); col++ {
-					cbs.unset(row, col, common.Neutral)
+					cbs.unsetPossibility(row, col, common.Neutral)
 				}
 			}
 		}
@@ -210,7 +218,7 @@ func (cbs CBS) needAll(game magnets.Game) {
 			if needs == provides {
 				// All are needed for signs. None can be neutral.
 				for row := 0; row < game.Guess.Height(); row++ {
-					cbs.unset(row, col, common.Neutral)
+					cbs.unsetPossibility(row, col, common.Neutral)
 				}
 			}
 		}
@@ -249,7 +257,7 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 		for _, r := range []rune{common.Positive, common.Negative, common.Neutral} {
 			// If r is missing from this end, its opposite cannot be in the other end.
 			if !cbs[row][col][r] {
-				cbs.unset(rowEnd, colEnd, common.Negate(r))
+				cbs.unsetPossibility(rowEnd, colEnd, common.Negate(r))
 			}
 		}
 	}
@@ -261,9 +269,9 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 			r, c := adj.Unpack()
 			switch game.Guess.Get(row+r, col+c) {
 			case common.Positive:
-				cbs.unset(row, col, common.Positive)
+				cbs.unsetPossibility(row, col, common.Positive)
 			case common.Negative:
-				cbs.unset(row, col, common.Negative)
+				cbs.unsetPossibility(row, col, common.Negative)
 			}
 		}
 	}
@@ -306,10 +314,12 @@ func (cbs CBS) validate(game magnets.Game) {
 func Solve(game magnets.Game) {
 	cbs := new(game)
 
+	attempts := 0
 	for {
 		dirty = false
 
 		cbs.validate(game)
+
 		cbs.justOne(game)
 		cbs.satisfied(game)
 		cbs.resolveNeighbors(game)
@@ -317,6 +327,12 @@ func Solve(game magnets.Game) {
 		cbs.needAll(game)
 
 		if !dirty {
+			break
+		}
+
+		attempts++
+		if attempts > 1000 {
+			fmt.Println("Giving up")
 			break
 		}
 	}

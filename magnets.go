@@ -91,7 +91,6 @@ func solvable(width, height int) {
 func main() {
 	stressTest()
 
-	// This game is solvable, but the solver cannot solve it yet.
 	// deserializer("3x3:201,102,120,111,LRTT*BBLR")
 
 	// solvable(7, 7)

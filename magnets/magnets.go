@@ -372,6 +372,9 @@ func (game *Game) CountRow(row int, r rune) int {
 	if r == common.Negative {
 		return game.rowNeg[row]
 	}
+	if r == common.Neutral {
+		return game.grid.Width() - (game.rowPos[row] + game.rowNeg[row])
+	}
 	return game.grid.CountRow(row, r)
 }
 
@@ -381,6 +384,9 @@ func (game *Game) CountCol(col int, r rune) int {
 	}
 	if r == common.Negative {
 		return game.colNeg[col]
+	}
+	if r == common.Neutral {
+		return game.grid.Height() - (game.colPos[col] + game.colNeg[col])
 	}
 	return game.grid.CountCol(col, r)
 }
