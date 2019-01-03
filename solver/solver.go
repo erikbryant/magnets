@@ -116,8 +116,9 @@ func colNeeds(game magnets.Game, col int, r rune) int {
 	return needs - has
 }
 
-// rowHasSpaceFor counts how many *possible* locations are present for the given polarity.
-func (cbs CBS) rowHasSpaceFor(game magnets.Game, row int, r rune) int {
+// rowHasSpaceForTotal counts how many *possible* locations are present for the given polarity.
+// This includes cells that have already been solved.
+func (cbs CBS) rowHasSpaceForTotal(game magnets.Game, row int, r rune) int {
 	count := 0
 	for col := 0; col < game.Guess.Width(); col++ {
 		if cbs[row][col][r] {
@@ -127,8 +128,9 @@ func (cbs CBS) rowHasSpaceFor(game magnets.Game, row int, r rune) int {
 	return count
 }
 
-// colHasSpaceFor counts how many *possible* locations are present for the given polarity.
-func (cbs CBS) colHasSpaceFor(game magnets.Game, col int, r rune) int {
+// colHasSpaceForTotal counts how many *possible* locations are present for the given polarity.
+// This includes cells that have already been solved.
+func (cbs CBS) colHasSpaceForTotal(game magnets.Game, col int, r rune) int {
 	count := 0
 	for row := 0; row < game.Guess.Height(); row++ {
 		if cbs[row][col][r] {
@@ -138,11 +140,36 @@ func (cbs CBS) colHasSpaceFor(game magnets.Game, col int, r rune) int {
 	return count
 }
 
+// rowHasSpaceForRemaining counts how many *possible* locations are present for the given polarity.
+// This DOES NOT INCLUDE cells that have already been solved.
+func (cbs CBS) rowHasSpaceForRemaining(game magnets.Game, row int, r rune) int {
+	count := 0
+	for col := 0; col < game.Guess.Width(); col++ {
+		if game.Guess.Get(row, col) == common.Empty && cbs[row][col][r] {
+			count++
+		}
+	}
+	return count
+}
+
+// colHasSpaceForRemaining counts how many *possible* locations are present for the given polarity.
+// This DOES NOT INCLUDE cells that have already been solved.
+func (cbs CBS) colHasSpaceForRemaining(game magnets.Game, col int, r rune) int {
+	count := 0
+	for row := 0; row < game.Guess.Height(); row++ {
+		if game.Guess.Get(row, col) == common.Empty && cbs[row][col][r] {
+			count++
+		}
+	}
+	return count
+}
+
+// satisfied looks at each row/col to see if there are exactly as many spaces to put a given polarity as there are needed.
 func (cbs CBS) satisfied(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative, common.Neutral} {
 		// Row is satisfied in this category? Set those frames. Clear this possibility elsewhere.
 		for row := 0; row < game.Guess.Height(); row++ {
-			if rowNeeds(game, row, category) == cbs.rowHasSpaceFor(game, row, category) {
+			if rowNeeds(game, row, category) == cbs.rowHasSpaceForTotal(game, row, category) {
 				for col := 0; col < game.Guess.Width(); col++ {
 					if cbs[row][col][category] {
 						cbs.setFrame(game, row, col, category)
@@ -152,7 +179,7 @@ func (cbs CBS) satisfied(game magnets.Game) {
 		}
 		// Col is satisfied in this category? Set those frames. Clear this possibility elsewhere.
 		for col := 0; col < game.Guess.Width(); col++ {
-			if colNeeds(game, col, category) == cbs.colHasSpaceFor(game, col, category) {
+			if colNeeds(game, col, category) == cbs.colHasSpaceForTotal(game, col, category) {
 				for row := 0; row < game.Guess.Height(); row++ {
 					if cbs[row][col][category] {
 						cbs.setFrame(game, row, col, category)

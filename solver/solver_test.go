@@ -197,6 +197,50 @@ func TestRowNeeds(t *testing.T) {
 	}
 }
 
+func TestRowNeedsPartiallySolved(t *testing.T) {
+	testCases := []struct {
+		row             int
+		expectedPos     int
+		expectedNeg     int
+		expectedNeutral int
+	}{
+		{0, 1, 2, 0},
+		{1, 2, 1, 0},
+		{2, 0, 1, 0},
+		{3, 1, 0, 0},
+	}
+	game, _ := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	cbs := new(game)
+
+	// Solve a little bit of the board.
+	cbs.setFrame(game, 3, 0, common.Positive)
+	cbs.setFrame(game, 2, 0, common.Neutral)
+
+	// Positive
+	for _, testCase := range testCases {
+		answer := rowNeeds(game, testCase.row, common.Positive)
+		if answer != testCase.expectedPos {
+			t.Errorf("ERROR: For row %d expected rowNeeds %d, got %d", testCase.row, testCase.expectedPos, answer)
+		}
+	}
+
+	// Negative
+	for _, testCase := range testCases {
+		answer := rowNeeds(game, testCase.row, common.Negative)
+		if answer != testCase.expectedNeg {
+			t.Errorf("ERROR: For row %d expected rowNeeds %d, got %d", testCase.row, testCase.expectedNeg, answer)
+		}
+	}
+
+	// Neutral
+	for _, testCase := range testCases {
+		answer := rowNeeds(game, testCase.row, common.Neutral)
+		if answer != testCase.expectedNeutral {
+			t.Errorf("ERROR: For row %d expected rowNeeds %d, got %d", testCase.row, testCase.expectedNeutral, answer)
+		}
+	}
+}
+
 func TestColNeeds(t *testing.T) {
 	testCases := []struct {
 		col             int
@@ -231,6 +275,135 @@ func TestColNeeds(t *testing.T) {
 		answer := colNeeds(game, testCase.col, common.Neutral)
 		if answer != testCase.expectedNeutral {
 			t.Errorf("ERROR: For col %d expected colNeeds %d, got %d", testCase.col, testCase.expectedNeutral, answer)
+		}
+	}
+}
+
+func TestColNeedsPartiallySolved(t *testing.T) {
+	testCases := []struct {
+		col             int
+		expectedPos     int
+		expectedNeg     int
+		expectedNeutral int
+	}{
+		{0, 1, 1, 0},
+		{1, 1, 1, 0},
+		{2, 2, 2, 0},
+	}
+	game, _ := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	cbs := new(game)
+
+	// Solve a little bit of the board.
+	cbs.setFrame(game, 3, 0, common.Positive)
+	cbs.setFrame(game, 2, 0, common.Neutral)
+
+	// Positive
+	for _, testCase := range testCases {
+		answer := colNeeds(game, testCase.col, common.Positive)
+		if answer != testCase.expectedPos {
+			t.Errorf("ERROR: For col %d expected colNeeds %d, got %d", testCase.col, testCase.expectedPos, answer)
+		}
+	}
+
+	// Negative
+	for _, testCase := range testCases {
+		answer := colNeeds(game, testCase.col, common.Negative)
+		if answer != testCase.expectedNeg {
+			t.Errorf("ERROR: For col %d expected colNeeds %d, got %d", testCase.col, testCase.expectedNeg, answer)
+		}
+	}
+
+	// Neutral
+	for _, testCase := range testCases {
+		answer := colNeeds(game, testCase.col, common.Neutral)
+		if answer != testCase.expectedNeutral {
+			t.Errorf("ERROR: For col %d expected colNeeds %d, got %d", testCase.col, testCase.expectedNeutral, answer)
+		}
+	}
+}
+
+func TestRowHasSpaceForTotal(t *testing.T) {
+	testCases := []struct {
+		row             int
+		expectedPos     int
+		expectedNeg     int
+		expectedNeutral int
+	}{
+		{0, 3, 3, 3},
+		{1, 3, 3, 3},
+		{2, 3, 3, 3},
+		{3, 3, 3, 3},
+	}
+	game, _ := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	cbs := new(game)
+
+	// Positive
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Positive)
+		if answer != testCase.expectedPos {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedPos, answer)
+		}
+	}
+
+	// Negative
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Negative)
+		if answer != testCase.expectedNeg {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeg, answer)
+		}
+	}
+
+	// Neutral
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Neutral)
+		if answer != testCase.expectedNeutral {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeutral, answer)
+		}
+	}
+}
+
+func TestRowHasSpaceForTotalPartiallySolved(t *testing.T) {
+	testCases := []struct {
+		row             int
+		expectedPos     int
+		expectedNeg     int
+		expectedNeutral int
+	}{
+		{0, 3, 3, 3},
+		{1, 3, 3, 3},
+		{2, 1, 1, 3},
+		{3, 3, 3, 3},
+	}
+	game, _ := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	cbs := new(game)
+
+	// Solve a little bit of the board.
+	cbs.setFrame(game, 3, 0, common.Positive)
+	cbs.setFrame(game, 2, 0, common.Neutral)
+
+	game.Print()
+
+	// Positive
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Positive)
+		if answer != testCase.expectedPos {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedPos, answer)
+		}
+	}
+
+	// Negative
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Negative)
+		if answer != testCase.expectedNeg {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeg, answer)
+		}
+	}
+
+	// Neutral
+	for _, testCase := range testCases {
+		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Neutral)
+		if answer != testCase.expectedNeutral {
+			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeutral, answer)
 		}
 	}
 }

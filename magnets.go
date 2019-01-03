@@ -89,9 +89,9 @@ func solvable(width, height int) {
 }
 
 func main() {
-	stressTest()
+	// stressTest()
 
-	// deserializer("3x3:201,102,120,111,LRTT*BBLR")
+	deserializer("3x3:201,102,120,111,LRTT*BBLR")
 
 	// solvable(7, 7)
 }
