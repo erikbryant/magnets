@@ -5,9 +5,57 @@ import (
 	"github.com/erikbryant/magnets/magnets"
 	"github.com/erikbryant/magnets/solver"
 	"math/rand"
+	"os"
 )
 
-// stressTest loops forever, creating random boards and trying to solve them. At intervals it prints success/fail statistics.
+// createCorups creates games and tries to solve them. The ones it can solve it writes to
+// one file and the ones it cannot solve it writes to another file.
+func createCorpus() {
+	s, err := os.Create("solved")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer s.Close()
+
+	u, err := os.Create("unsolved")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer u.Close()
+
+	for solved := 0; solved < 1000; {
+		game := magnets.New(rand.Intn(15)+2, rand.Intn(15)+2)
+
+		solver.Solve(game)
+
+		serial, ok := game.Serialize()
+		if !ok {
+			fmt.Println("Could not serialize game")
+			game.Print()
+			return
+		}
+
+		serial = fmt.Sprintf("%s\n", serial)
+
+		if game.Solved() {
+			solved++
+			_, err = s.WriteString(serial)
+		} else {
+			_, err = u.WriteString(serial)
+		}
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+// stressTest loops forever, creating random boards and trying to solve them. At intervals
+// it prints success/fail statistics.
 func stressTest() {
 	games := 0
 	solved := 0
@@ -61,11 +109,7 @@ func solvable(width, height int) {
 }
 
 func main() {
-	stressTest()
+	// createCorpus()
 
-	// i := 10
-	// for {
-	// 	solvable(i, i)
-	// 	i++
-	// }
+	stressTest()
 }
