@@ -62,7 +62,7 @@ func stressTest() {
 func deserializer(s string) {
 	game, ok := magnets.Deserialize(s)
 	if !ok {
-		fmt.Printf("Could not deserialize!", s)
+		fmt.Println("Could not deserialize!", s)
 		return
 	}
 
@@ -93,5 +93,5 @@ func main() {
 
 	deserializer("3x3:201,102,120,111,LRTT*BBLR")
 
-	// solvable(7, 7)
+	solvable(7, 7)
 }
