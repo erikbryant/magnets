@@ -10,9 +10,9 @@ package magnets
 // TODO: Replace the printf's with err.
 
 import (
-	"../board"
-	"../common"
 	"fmt"
+	"github.com/erikbryant/magnets/board"
+	"github.com/erikbryant/magnets/common"
 	"math/rand"
 	"strconv"
 	"strings"

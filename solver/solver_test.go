@@ -1,8 +1,8 @@
 package solver
 
 import (
-	"../common"
-	"../magnets"
+	"github.com/erikbryant/magnets/common"
+	"github.com/erikbryant/magnets/magnets"
 	"testing"
 )
 

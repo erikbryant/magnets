@@ -1,8 +1,8 @@
 package magnets
 
 import (
-	"../board"
-	"../common"
+	"github.com/erikbryant/magnets/board"
+	"github.com/erikbryant/magnets/common"
 	"testing"
 )
 

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./magnets"
-	"./solver"
 	"fmt"
+	"github.com/erikbryant/magnets/magnets"
+	"github.com/erikbryant/magnets/solver"
 	"math/rand"
 )
 

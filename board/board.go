@@ -1,8 +1,8 @@
 package board
 
 import (
-	"../common"
 	"fmt"
+	"github.com/erikbryant/magnets/common"
 )
 
 type Board struct {

@@ -1,7 +1,7 @@
 package board
 
 import (
-	"../common"
+	"github.com/erikbryant/magnets/common"
 	"testing"
 )
 

@@ -15,10 +15,10 @@ package solver
 // just one, the solver sets that in the Guess grid as a known entity.
 
 import (
-	"../board"
-	"../common"
-	"../magnets"
 	"fmt"
+	"github.com/erikbryant/magnets/board"
+	"github.com/erikbryant/magnets/common"
+	"github.com/erikbryant/magnets/magnets"
 )
 
 type CBS [][]map[rune]bool
