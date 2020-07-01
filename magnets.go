@@ -13,47 +13,18 @@ func stressTest() {
 	solved := 0
 
 	for {
-		gamez := magnets.New(rand.Intn(15)+2, rand.Intn(15)+2)
-
-		// --- cut here ---
-
-		// TODO: There is something wrong with board creation. magnets.New()
-		// sometimes (like 9 in 100,000 calls) returns data that is not
-		// consistent and causes the solver to go into an infinite loop.
-		//
-		// Debugging of the infinite loop states show that the solver
-		// has put invalid magnet orientations and has moved where the
-		// neutrals are supposed to be.
-		//
-		// Serializing and deserializing the new board before calling the
-		// solver alleviates the problem.
-
-		if !gamez.Valid() {
-			fmt.Println("Game is not valid")
-			gamez.Print()
-			return
-		}
-
-		s, ok := gamez.Serialize()
-		if !ok {
-			fmt.Println("Unable to serialize")
-			gamez.Print()
-		}
-		game, ok2 := magnets.Deserialize(s)
-		if !ok2 {
-			fmt.Println("Unable to deserialize:", s)
-		}
-
-		// --- cut here ---
-
+		game := magnets.New(rand.Intn(15)+2, rand.Intn(15)+2)
 		games++
+
 		solver.Solve(game)
+
 		if game.Solved() {
 			solved++
 		}
+
 		if games%10000 == 0 {
-			pctSolved := int(float64(solved) / float64(games) * 100.0)
-			fmt.Printf("Played: %d Solved: %d (%d%%)\n", games, solved, pctSolved)
+			pctSolved := 100.0 * float64(solved) / float64(games)
+			fmt.Printf("Played: %d Solved: %d (%.3f%%)\n", games, solved, pctSolved)
 		}
 	}
 }
@@ -75,7 +46,7 @@ func deserializer(s string) {
 	}
 }
 
-// solvable loops forever trying to solve random boards. It will print any it can solve.
+// solvable loops forever trying random boards until it can solve one.
 func solvable(width, height int) {
 	for {
 		game := magnets.New(width, height)
@@ -90,11 +61,11 @@ func solvable(width, height int) {
 }
 
 func main() {
-	// stressTest()
+	stressTest()
 
-	i := 3
-	for {
-		solvable(i, i)
-		i++
-	}
+	// i := 10
+	// for {
+	// 	solvable(i, i)
+	// 	i++
+	// }
 }
