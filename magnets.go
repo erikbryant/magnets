@@ -7,7 +7,7 @@ import (
 	"math/rand"
 )
 
-// stressTest loops forever, creating random boards and trying to solve them. At intervals it will print its success/fail statistics.
+// stressTest loops forever, creating random boards and trying to solve them. At intervals it prints success/fail statistics.
 func stressTest() {
 	games := 0
 	solved := 0
@@ -84,14 +84,17 @@ func solvable(width, height int) {
 			continue
 		}
 		s, _ := game.Serialize()
-		fmt.Println(s)
+		fmt.Printf("\"%s\",\n", s)
+		break
 	}
 }
 
 func main() {
 	// stressTest()
 
-	deserializer("3x3:201,102,120,111,LRTT*BBLR")
-
-	solvable(7, 7)
+	i := 3
+	for {
+		solvable(i, i)
+		i++
+	}
 }
