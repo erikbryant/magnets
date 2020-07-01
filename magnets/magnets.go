@@ -568,10 +568,15 @@ func (game *Game) Serialize() (string, bool) {
 // Deserialize takes a serial representation of a game and unpacks it,
 // returning a game and whether or not the unpacking was successful.
 func Deserialize(s string) (Game, bool) {
-	valid := true
-
 	xPos := strings.IndexRune(s, 'x')
+	if xPos == -1 {
+		return makeGame(0, 0), false
+	}
+
 	colonPos := strings.IndexRune(s, ':')
+	if colonPos == -1 {
+		return makeGame(0, 0), false
+	}
 
 	width, _ := strconv.Atoi(s[0:xPos])
 	height, _ := strconv.Atoi(s[xPos+1 : colonPos])
@@ -581,6 +586,9 @@ func Deserialize(s string) (Game, bool) {
 
 	// Col positive count
 	commaPos := strings.IndexRune(s, ',')
+	if commaPos == -1 {
+		return game, false
+	}
 	for i, r := range s[:commaPos] {
 		game.colPos[i] = runeToCount(r)
 	}
@@ -588,6 +596,9 @@ func Deserialize(s string) (Game, bool) {
 
 	// Row positive count
 	commaPos = strings.IndexRune(s, ',')
+	if commaPos == -1 {
+		return game, false
+	}
 	for i, r := range s[:commaPos] {
 		game.rowPos[i] = runeToCount(r)
 	}
@@ -595,6 +606,9 @@ func Deserialize(s string) (Game, bool) {
 
 	// Col negative count
 	commaPos = strings.IndexRune(s, ',')
+	if commaPos == -1 {
+		return game, false
+	}
 	for i, r := range s[:commaPos] {
 		game.colNeg[i] = runeToCount(r)
 	}
@@ -602,6 +616,9 @@ func Deserialize(s string) (Game, bool) {
 
 	// Row negative count
 	commaPos = strings.IndexRune(s, ',')
+	if commaPos == -1 {
+		return game, false
+	}
 	for i, r := range s[:commaPos] {
 		game.rowNeg[i] = runeToCount(r)
 	}
@@ -626,10 +643,10 @@ func Deserialize(s string) (Game, bool) {
 			game.Guess.Set(row, col, common.Wall)
 		case '!':
 			game.frames.Set(row, col, common.Empty)
-			valid = false
+			return game, false
 		default:
 			game.frames.Set(row, col, common.Empty)
-			valid = false
+			return game, false
 		}
 		col++
 		if col >= width {
@@ -638,5 +655,5 @@ func Deserialize(s string) (Game, bool) {
 		}
 	}
 
-	return game, valid
+	return game, true
 }

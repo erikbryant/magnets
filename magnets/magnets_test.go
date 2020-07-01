@@ -18,7 +18,6 @@ import (
 // setFrameMagnet()
 // placeFrames()
 // placePieces()
-// Deserialize()
 
 func TestNew(t *testing.T) {
 	testCases := []struct {
@@ -125,5 +124,23 @@ func TestSerialize(t *testing.T) {
 	}
 	if answer != expected {
 		t.Errorf("ERROR: Expected: %s Got: %s", expected, answer)
+	}
+}
+
+func TestDeserialize(t *testing.T) {
+	testCases := []struct {
+		s     string
+		valid bool
+	}{
+		{"", false},
+		{"1x2:110101TB", false},
+		{"4x5:2022,12021,2013,21201,TTTTBBBBTLRTBLRBLRLR", true},
+	}
+
+	for _, testCase := range testCases {
+		_, valid := Deserialize(testCase.s)
+		if valid != testCase.valid {
+			t.Errorf("For %s expected %t, got %t", testCase.s, testCase.valid, valid)
+		}
 	}
 }
