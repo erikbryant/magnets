@@ -15,6 +15,7 @@ const (
 	Border   = 'X'
 )
 
+// Negate returns the opposite value of the given rune.
 func Negate(r rune) rune {
 	switch r {
 	case Positive:

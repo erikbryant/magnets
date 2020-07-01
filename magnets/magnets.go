@@ -19,6 +19,7 @@ import (
 	"time"
 )
 
+// Game contains all of the representations to hold state for a game of magnets.
 type Game struct {
 	frames board.Board
 	grid   board.Board
@@ -34,11 +35,12 @@ type Game struct {
 	serial string
 }
 
+// init sets the random seed.
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// Print() prints an ASCII representation of the board.
+// Print prints an ASCII representation of the board.
 func (game *Game) Print() {
 	fmt.Printf("\n")
 	game.frames.Print("Frames", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
@@ -46,6 +48,7 @@ func (game *Game) Print() {
 	game.Guess.Print("Guess", []int{}, []int{}, []int{}, []int{})
 }
 
+// Valid returns true if the game state is valid, false otherwise.
 func (game *Game) Valid() bool {
 	// Validate board size bounds.
 	if game.grid.Width() <= 0 || game.grid.Height() <= 0 {
@@ -129,6 +132,7 @@ func (game *Game) Valid() bool {
 	return true
 }
 
+// SetDomino sets both ends of a domino, given one end.
 func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
 	if l.Get(row, col) != common.Empty {
 		fmt.Printf("WARNING: assigning '%c' to non-empty cell %d, %d = '%c'\n", r, row, col, l.Get(row, col))
@@ -148,12 +152,12 @@ func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
 	l.Set(rowEnd, colEnd, common.Negate(r))
 }
 
-// GetFrame() returns the rune at this coordinate from the frames board.
+// GetFrame returns the rune at this coordinate from the frames board.
 func (game *Game) GetFrame(row, col int) rune {
 	return game.frames.Get(row, col)
 }
 
-// GetFrameEnd() returns the coordinates of the other end of the frame. If the cell is a wall (not a frame) it returns -1, -1.
+// GetFrameEnd returns the coordinates of the other end of the frame. If the cell is a wall (not a frame) it returns -1, -1.
 func (game *Game) GetFrameEnd(row, col int) (int, int) {
 	r := 0
 	c := 0
@@ -180,18 +184,21 @@ func (game *Game) GetFrameEnd(row, col int) (int, int) {
 	return row + r, col + c
 }
 
-// Frames() iterates over every frame in the layer, pushing the row/col to a channel.
+// Frames iterates over every frame in the layer, pushing the row/col to a channel.
 // It uses a filter, so if you change the contents of the frame layer while it is
 // iterating it may return inconsistent results.
 func (game *Game) Frames() <-chan board.Coord {
 	return game.frames.Cells(common.Up, common.Left)
 }
 
+// setFrameMagnet sets the polarities of a given frame to follow its neighbors.
+// If there are no neighbors, use a random sign.
 func (game *Game) setFrameMagnet(row, col int) {
-	// Choose a random sign. Then we'll see if it works OK.
+	// Choose a random sign for the new frame.
 	choices := []rune{common.Positive, common.Negative}
 	sign := choices[rand.Intn(len(choices))]
 
+	// If there is a neighbor that is already set, follow its polarity instead.
 	for _, mod := range board.Adjacents {
 		modR, modC := mod.Unpack()
 		cell := game.grid.Get(row+modR, col+modC)
@@ -208,6 +215,8 @@ func (game *Game) setFrameMagnet(row, col int) {
 	game.grid.FloodFill()
 }
 
+// placeFrames attempts to fill a given board with frames. It keeps
+// trying until it gets a valid solution.
 func (game *Game) placeFrames() {
 	// This algorithm may sometimes generate an invalid
 	// board frame. Loop until it generates a valid one.
@@ -272,7 +281,7 @@ func (game *Game) placeFrames() {
 	}
 }
 
-// placePieces() puts the neutrals and magnets randomly on the board.
+// placePieces puts the neutrals and magnets randomly on the board.
 func (game *Game) placePieces() {
 	// Place all of the neutrals before placing any magnets.
 	// The neutrals have a chance to form walls that bound
@@ -312,7 +321,7 @@ func (game *Game) placePieces() {
 	}
 }
 
-// Solved() checks to see if the guess board has a valid solution.
+// Solved checks to see if the guess board has a valid solution.
 func (game *Game) Solved() bool {
 	for row := 0; row < game.Guess.Height(); row++ {
 		if game.Guess.CountRow(row, common.Positive) != game.rowPos[row] {
@@ -335,7 +344,7 @@ func (game *Game) Solved() bool {
 	return true
 }
 
-// makeGame() creates an empty game state.
+// makeGame creates an empty game state.
 func makeGame(width, height int) Game {
 	var game Game
 
@@ -351,7 +360,7 @@ func makeGame(width, height int) Game {
 	return game
 }
 
-// New() creates and populates all of the layers that make up a game.
+// New creates and populates all of the layers that make up a game.
 func New(width, height int) Game {
 	game := makeGame(width, height)
 	game.placeFrames()
@@ -365,6 +374,7 @@ func New(width, height int) Game {
 	return game
 }
 
+// CountRow counts the number of occurrences of the given rune in a row.
 func (game *Game) CountRow(row int, r rune) int {
 	if r == common.Positive {
 		return game.rowPos[row]
@@ -378,6 +388,7 @@ func (game *Game) CountRow(row int, r rune) int {
 	return game.grid.CountRow(row, r)
 }
 
+// CountCol counts tthe number of occurrences of the given rune in a column.
 func (game *Game) CountCol(col int, r rune) int {
 	if r == common.Positive {
 		return game.colPos[col]
@@ -441,7 +452,7 @@ func (game *Game) CountCol(col int, r rune) int {
 // count is greater than 9 it rolls to alpha characters. First lowercase,
 // then uppercase.
 
-// countToRune() returns the base-62 form of an int. Valid input is 0-61.
+// countToRune returns the base-62 form of an int. Valid input is 0-61.
 func countToRune(count int) rune {
 	if count < 0 {
 		return '-'
@@ -466,7 +477,7 @@ func countToRune(count int) rune {
 	return '!'
 }
 
-// runeToCount() returns the base 10 form of a base-62. Valid input is 0-9, a-z, and A-Z.
+// runeToCount returns the base 10 form of a base-62. Valid input is 0-9, a-z, and A-Z.
 func runeToCount(r rune) int {
 	// Underflow!
 	if r < '0' {
@@ -492,7 +503,7 @@ func runeToCount(r rune) int {
 	return -1
 }
 
-// Serialize() returns a representation of the game in string form.
+// Serialize returns a representation of the game in string form.
 func (game *Game) Serialize() (string, bool) {
 	if !game.Valid() {
 		return "", false
@@ -554,6 +565,8 @@ func (game *Game) Serialize() (string, bool) {
 	return serial, valid
 }
 
+// Deserialize takes a serial representation of a game and unpacks it,
+// returning a game and whether or not the unpacking was successful.
 func Deserialize(s string) (Game, bool) {
 	valid := true
 

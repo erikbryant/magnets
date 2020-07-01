@@ -5,21 +5,25 @@ import (
 	"github.com/erikbryant/magnets/common"
 )
 
+// Board implements a widthxheight grid of runes.
 type Board struct {
 	width  int
 	height int
 	cells  [][]rune
 }
 
+// Coord represents a single row/col address.
 type Coord struct {
 	Row int
 	Col int
 }
 
 var (
-	Adjacents []Coord = []Coord{{Row: -1, Col: 0}, {Row: 0, Col: -1}, {Row: 0, Col: +1}, {Row: +1, Col: 0}}
+	// Adjacents contains the offsets for each orthogonal neigbor on a grid.
+	Adjacents = []Coord{{Row: -1, Col: 0}, {Row: 0, Col: -1}, {Row: 0, Col: +1}, {Row: +1, Col: 0}}
 )
 
+// New creates a new board, populated with empty squares.
 func New(width, height int) Board {
 	var l Board
 
@@ -38,12 +42,12 @@ func New(width, height int) Board {
 	return l
 }
 
-// Unpack() returns the row/col values from the struct.
+// Unpack returns the row/col values from the struct.
 func (c *Coord) Unpack() (int, int) {
 	return c.Row, c.Col
 }
 
-// Cells() iterates over every cell in the layer, pushing the row/col to a channel.
+// Cells iterates over every cell in the layer, pushing the row/col to a channel.
 // If you provide a filter it will return only those cells matching those values.
 // Be careful with the filter as you can get non-deterministic behavior if you change
 // values in the layer while iterating over the layer.
@@ -69,17 +73,17 @@ func (l *Board) Cells(r ...rune) <-chan Coord {
 	return c
 }
 
-// Width() returns the width of the layer.
+// Width returns the width of the layer.
 func (l *Board) Width() int {
 	return l.width
 }
 
-// Height() returns the height of the layer.
+// Height returns the height of the layer.
 func (l *Board) Height() int {
 	return l.height
 }
 
-// CountRow() returns the number of cells of type 'r' that are in the row.
+// CountRow returns the number of cells of type 'r' that are in the row.
 func (l *Board) CountRow(row int, r rune) int {
 	count := 0
 	for col := 0; col < l.width; col++ {
@@ -90,7 +94,7 @@ func (l *Board) CountRow(row int, r rune) int {
 	return count
 }
 
-// CountCol() returns the number of cells of type 'r' that are in the col.
+// CountCol returns the number of cells of type 'r' that are in the col.
 // TODO: merge this with CountRow() and just flip the matrix.
 func (l *Board) CountCol(col int, r rune) int {
 	count := 0
@@ -102,6 +106,7 @@ func (l *Board) CountCol(col int, r rune) int {
 	return count
 }
 
+// Get returns the rune at the given row/col.
 func (l *Board) Get(row, col int) rune {
 	if row < 0 || row >= l.height || col < 0 || col >= l.width {
 		return common.Border
@@ -109,6 +114,7 @@ func (l *Board) Get(row, col int) rune {
 	return l.cells[row][col]
 }
 
+// Set sets the cell at row/col to the given rune.
 func (l *Board) Set(row, col int, r rune) {
 	if row < 0 || row >= l.height || col < 0 || col >= l.width {
 		return
@@ -116,6 +122,7 @@ func (l *Board) Set(row, col int, r rune) {
 	l.cells[row][col] = r
 }
 
+// FloodFill fills in a board (or bounded region on a board).
 func (l *Board) FloodFill() {
 	changed := true
 
@@ -136,6 +143,7 @@ func (l *Board) FloodFill() {
 	}
 }
 
+// Equal returns true if the two boards are identical, false otherwise.
 func (l *Board) Equal(l2 Board) bool {
 	if l.Height() != l2.Height() || l.Width() != l2.Width() {
 		return false
@@ -151,6 +159,7 @@ func (l *Board) Equal(l2 Board) bool {
 	return true
 }
 
+// Print prints a representation of the board state to the console.
 func (l *Board) Print(name string, rowPos, rowNeg, colPos, colNeg []int) {
 	fmt.Printf("%s (%dx%d)\n", name, l.width, l.height)
 

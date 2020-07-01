@@ -21,6 +21,7 @@ import (
 	"github.com/erikbryant/magnets/magnets"
 )
 
+// CBS is the constraint-based solver representation.
 type CBS [][]map[rune]bool
 
 var (
@@ -304,15 +305,15 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	}
 }
 
-// validate() warns if the CBS is inconsistent.
-func (cbs CBS) validate(game magnets.Game) {
+// validate returns an error if the CBS is inconsistent.
+func (cbs CBS) validate(game magnets.Game) error {
 	for cell := range game.Guess.Cells(common.Positive, common.Negative, common.Neutral) {
 		row, col := cell.Unpack()
 		r := game.Guess.Get(row, col)
 		// This is already solved, so the CBS should only have r in it.
 		for key := range cbs[row][col] {
 			if key != r {
-				fmt.Printf("ERROR: CBS %d, %d had extraneous '%c'\n", row, col, key)
+				return fmt.Errorf("ERROR: CBS %d, %d had extraneous '%c'\n", row, col, key)
 			}
 		}
 	}
@@ -331,13 +332,16 @@ func (cbs CBS) validate(game magnets.Game) {
 				case common.Wall:
 					continue
 				default:
-					fmt.Printf("ERROR: CBS %d, %d has unexpected '%c'\n", row, col, key)
+					return fmt.Errorf("ERROR: CBS %d, %d has unexpected '%c'\n", row, col, key)
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
+// Solve attempts to find a solution for the game, or gives up if it cannot.
 func Solve(game magnets.Game) {
 	cbs := new(game)
 
@@ -345,7 +349,11 @@ func Solve(game magnets.Game) {
 	for {
 		dirty = false
 
-		cbs.validate(game)
+		err := cbs.validate(game)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
 
 		cbs.justOne(game)
 		cbs.satisfied(game)
@@ -358,8 +366,8 @@ func Solve(game magnets.Game) {
 		}
 
 		attempts++
-		if attempts > 1000 {
-			// fmt.Printf("Giving up")
+		if attempts > 500 {
+			fmt.Printf("-")
 			break
 		}
 	}
