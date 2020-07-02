@@ -2,7 +2,6 @@ package solver
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/erikbryant/magnets/common"
 	"github.com/erikbryant/magnets/magnets"
 	"os"
@@ -516,16 +515,16 @@ func TestRowHasSpaceForTotalPartiallySolved(t *testing.T) {
 	}
 }
 
-// This is becoming a regression test. If the run time gets too high, move out of the unit tests.
-func TestSolve(t *testing.T) {
-	file, err := os.Open("test_solve.txt")
+// helper runs solver tests against a given file.
+func helper(t *testing.T, file string, expected bool) {
+	f, err := os.Open(file)
 	if err != nil {
-		t.Errorf("Unable to open testcases %s", err)
+		t.Errorf("Unable to open testcases %s %s", file, err)
 	}
 
-	defer file.Close()
+	defer f.Close()
 
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		testCase := scanner.Text()
 
@@ -539,49 +538,19 @@ func TestSolve(t *testing.T) {
 			continue
 		}
 
-		fmt.Println(testCase)
-
 		game, ok := magnets.Deserialize(testCase)
 		if !ok {
 			t.Errorf("ERROR: Unable to deserialize %s", testCase)
 		}
 		Solve(game)
-		if !game.Solved() {
-			t.Errorf("ERROR: Unable to solve %s", testCase)
+		if game.Solved() != expected {
+			t.Errorf("ERROR: For %s expected solved to be %t", testCase, expected)
 		}
 	}
 }
 
-// Cases we know are solvable, but that the solver cannot do yet. If the solver solves one, error so we know to move the test case to the TestSolve() function.
-func TestSolve_Unsolvable(t *testing.T) {
-	file, err := os.Open("test_unsolved.txt")
-	if err != nil {
-		t.Errorf("Unable to open testcases %s", err)
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		testCase := scanner.Text()
-
-		testCase = strings.TrimSpace(testCase)
-
-		if len(testCase) == 0 {
-			continue
-		}
-
-		if strings.HasPrefix(testCase, "//") {
-			continue
-		}
-
-		game, ok := magnets.Deserialize(testCase)
-		if !ok {
-			t.Errorf("ERROR: Unable to deserialize %s", testCase)
-		}
-		Solve(game)
-		if game.Solved() {
-			t.Errorf("ERROR: We can now solve this. Move to other test case. %s", testCase)
-		}
-	}
+// This is becoming a regression test. If the run time gets too high, move out of the unit tests.
+func TestSolve(t *testing.T) {
+	helper(t, "test_solve.txt", true)
+	helper(t, "test_solve_fail.txt", false)
 }
