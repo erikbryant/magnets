@@ -27,8 +27,11 @@ func createCorpus() {
 
 	defer u.Close()
 
-	for solved := 0; solved < 1000; {
+	games := 0
+
+	for solved := 0; solved < 1000000; {
 		game := magnets.New(rand.Intn(15)+2, rand.Intn(15)+2)
+		games++
 
 		solver.Solve(game)
 
@@ -50,6 +53,11 @@ func createCorpus() {
 		if err != nil {
 			fmt.Println(err)
 			return
+		}
+
+		if games%10000 == 0 {
+			pctSolved := 100.0 * float64(solved) / float64(games)
+			fmt.Printf("Played: %d Solved: %d (%.3f%%)\n", games, solved, pctSolved)
 		}
 	}
 }
@@ -109,7 +117,7 @@ func solvable(width, height int) {
 }
 
 func main() {
-	// createCorpus()
+	createCorpus()
 
 	stressTest()
 }
