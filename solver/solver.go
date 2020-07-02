@@ -367,7 +367,6 @@ func Solve(game magnets.Game) {
 
 		attempts++
 		if attempts > 500 {
-			fmt.Printf("-")
 			break
 		}
 	}
