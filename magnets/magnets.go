@@ -147,7 +147,7 @@ func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
 		return
 	}
 	if l.Get(rowEnd, colEnd) != common.Empty {
-		fmt.Printf("WARNING: assigning '%c' to non-empty cell %d, %d = '%c'\n", r, row, col, l.Get(row, col))
+		fmt.Printf("WARNING: assigning '%c' to non-empty sister cell %d, %d = '%c'\n", r, row, col, l.Get(rowEnd, colEnd))
 	}
 	l.Set(rowEnd, colEnd, common.Negate(r))
 }
@@ -268,7 +268,7 @@ func (game *Game) placeFrames() {
 		}
 
 		// Is this board valid? If so, ship it! :-)
-		if game.Valid() {
+		if game.Valid() && game.singleSolution() {
 			break
 		}
 
@@ -330,6 +330,9 @@ func (game *Game) Solved() bool {
 		if game.Guess.CountRow(row, common.Negative) != game.rowNeg[row] {
 			return false
 		}
+		if game.Guess.CountRow(row, common.Neutral) != game.Guess.Width()-(game.rowPos[row]+game.rowNeg[row]) {
+			return false
+		}
 	}
 
 	for col := 0; col < game.Guess.Width(); col++ {
@@ -337,6 +340,9 @@ func (game *Game) Solved() bool {
 			return false
 		}
 		if game.Guess.CountCol(col, common.Negative) != game.colNeg[col] {
+			return false
+		}
+		if game.Guess.CountCol(col, common.Neutral) != game.Guess.Height()-(game.colPos[col]+game.colNeg[col]) {
 			return false
 		}
 	}

@@ -27,7 +27,7 @@ func TestNew(t *testing.T) {
 		{1, 2},
 		{2, 1},
 		{2, 2},
-		{25, 25},
+		{5, 4},
 	}
 
 	for _, testCase := range testCases {
@@ -132,8 +132,14 @@ func TestDeserialize(t *testing.T) {
 		s     string
 		valid bool
 	}{
+		// Empty string
 		{"", false},
+		// Missing the commas
 		{"1x2:110101TB", false},
+		// List of negatives is short
+		{"5x2:11011,22,1101,22,LRTLRLRBLR", false},
+
+		// Valid
 		{"4x5:2022,12021,2013,21201,TTTTBBBBTLRTBLRBLRLR", true},
 	}
 
