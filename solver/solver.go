@@ -193,13 +193,17 @@ func (cbs CBS) satisfied(game magnets.Game) {
 	return
 }
 
-// needAll checks to see if the number of pos+neg needed is equal to the number of frames that are still undecided. If so, none of those frames can be neutral.
+// needAll checks to see if the number of pos+neg needed is equal to the number of frames that
+// are still undecided. If so, none of those frames can be neutral.
 // NOTE: Once doubleSingle() is written this function will no longer be needed.
 func (cbs CBS) needAll(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative} {
 		// Row (#frames remaining that can be category) == (#squares needed).
 		for row := 0; row < game.Guess.Height(); row++ {
 			needs := rowNeeds(game, row, category)
+			if needs == 0 {
+				continue
+			}
 			provides := 0
 			for col := 0; col < game.Guess.Width(); col++ {
 				direction := game.GetFrame(row, col)
@@ -227,6 +231,9 @@ func (cbs CBS) needAll(game magnets.Game) {
 		// Col (#frames remaining that can be category) == (#squares needed).
 		for col := 0; col < game.Guess.Width(); col++ {
 			needs := colNeeds(game, col, category)
+			if needs == 0 {
+				continue
+			}
 			provides := 0
 			for row := 0; row < game.Guess.Height(); row++ {
 				direction := game.GetFrame(row, col)
@@ -305,8 +312,40 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	}
 }
 
-// validate returns an error if the CBS is inconsistent.
+// zeroInRow looks for rows that have no positives or that have no negatives and removes those possibilities from the cbs.
+func (cbs CBS) zeroInRow(game magnets.Game) {
+	for _, category := range []rune{common.Positive, common.Negative} {
+		for row := 0; row < game.Guess.Height(); row++ {
+			if game.CountRow(row, category) == 0 {
+				// Remove all instances of 'category' from the row in the cbs
+				for col := 0; col < game.Guess.Width(); col++ {
+					cbs.unsetPossibility(row, col, category)
+				}
+			}
+		}
+	}
+}
+
+// zeroInCol looks for columns that have no positives or that have no negatives and removes those possibilities from the cbs.
+func (cbs CBS) zeroInCol(game magnets.Game) {
+	for _, category := range []rune{common.Positive, common.Negative} {
+		for col := 0; col < game.Guess.Width(); col++ {
+			if game.CountCol(col, category) == 0 {
+				// Remove all instances of 'category' from the column in the cbs
+				for row := 0; row < game.Guess.Height(); row++ {
+					cbs.unsetPossibility(row, col, category)
+				}
+			}
+		}
+	}
+}
+
+// validate returns an error if the game or the CBS is inconsistent.
 func (cbs CBS) validate(game magnets.Game) error {
+	if !game.Valid() {
+		return fmt.Errorf("Invalid game board state detected")
+	}
+
 	for cell := range game.Guess.Cells(common.Positive, common.Negative, common.Neutral) {
 		row, col := cell.Unpack()
 		r := game.Guess.Get(row, col)
@@ -345,6 +384,9 @@ func (cbs CBS) validate(game magnets.Game) error {
 func Solve(game magnets.Game) {
 	cbs := new(game)
 
+	cbs.zeroInRow(game)
+	cbs.zeroInCol(game)
+
 	attempts := 0
 	for {
 		dirty = false
@@ -352,6 +394,7 @@ func Solve(game magnets.Game) {
 		err := cbs.validate(game)
 		if err != nil {
 			fmt.Println(err)
+			game.Print()
 			break
 		}
 

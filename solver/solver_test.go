@@ -439,7 +439,50 @@ func TestRowHasSpaceForTotal(t *testing.T) {
 // 	t.Errorf("Not implemented")
 // }
 
+func TestZeroInRow(t *testing.T) {
+	game, ok := magnets.Deserialize("2x2:00,00,00,00,LRLR")
+	if !ok {
+		t.Errorf("Unable to deserialize board")
+	}
+
+	cbs := new(game)
+	cbs.zeroInRow(game)
+
+	for col := 0; col < game.Guess.Width(); col++ {
+		for row := 0; row < game.Guess.Height(); row++ {
+			if cbs[row][col][common.Negative] {
+				t.Errorf("Unexpected negative at %dx%d", row, col)
+			}
+			if cbs[row][col][common.Positive] {
+				t.Errorf("Unexpected positive at %dx%d", row, col)
+			}
+		}
+	}
+}
+
+func TestZeroInCol(t *testing.T) {
+	game, ok := magnets.Deserialize("2x2:00,00,00,00,LRLR")
+	if !ok {
+		t.Errorf("Unable to deserialize board")
+	}
+
+	cbs := new(game)
+	cbs.zeroInCol(game)
+
+	for col := 0; col < game.Guess.Width(); col++ {
+		for row := 0; row < game.Guess.Height(); row++ {
+			if cbs[row][col][common.Negative] {
+				t.Errorf("Unexpected negative at %dx%d", row, col)
+			}
+			if cbs[row][col][common.Positive] {
+				t.Errorf("Unexpected positive at %dx%d", row, col)
+			}
+		}
+	}
+}
+
 func TestValidate(t *testing.T) {
+	// Test #1 - Invalid CBS state
 	game, ok := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
 	if !ok {
 		t.Errorf("Unable to deserialize board")
@@ -464,6 +507,26 @@ func TestValidate(t *testing.T) {
 		t.Error("validate was supposed to find an error but did not")
 	}
 
+	// Test #2 - Invalid game state
+	game, ok = magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	if !ok {
+		t.Errorf("Unable to deserialize board")
+	}
+
+	cbs = new(game)
+
+	err = cbs.validate(game)
+	if err != nil {
+		t.Error("Error validating CBS", err)
+	}
+
+	game.Guess.Set(0, 0, common.Negative)
+	game.Guess.Set(0, 1, common.Negative)
+
+	err = cbs.validate(game)
+	if err == nil {
+		t.Error("validate was supposed to find an error but did not")
+	}
 }
 
 func TestRowHasSpaceForTotalPartiallySolved(t *testing.T) {
