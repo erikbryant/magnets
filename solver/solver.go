@@ -197,6 +197,10 @@ func (cbs CBS) satisfied(game magnets.Game) {
 // are still undecided. If so, none of those frames can be neutral.
 // NOTE: Once doubleSingle() is written this function will no longer be needed.
 func (cbs CBS) needAll(game magnets.Game) {
+	// If there are any that we know what they must be, but have not set them
+	// yet, do that now. Otherwise, the count will be off.
+	cbs.justOne(game)
+
 	for _, category := range []rune{common.Positive, common.Negative} {
 		// Row (#frames remaining that can be category) == (#squares needed).
 		for row := 0; row < game.Guess.Height(); row++ {
@@ -398,11 +402,11 @@ func Solve(game magnets.Game) {
 			break
 		}
 
-		cbs.justOne(game)
 		cbs.satisfied(game)
 		cbs.resolveNeighbors(game)
 		cbs.doubleSingle(game)
 		cbs.needAll(game)
+		cbs.justOne(game)
 
 		if !dirty {
 			break
