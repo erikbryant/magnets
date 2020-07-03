@@ -591,44 +591,44 @@ func Deserialize(s string) (Game, bool) {
 	s = s[colonPos+1:]
 
 	// Col positive count
-	commaPos := strings.IndexRune(s, ',')
-	if commaPos == -1 {
-		return game, false
-	}
-	for i, r := range s[:commaPos] {
+	for i, r := range s[:width] {
 		game.colPos[i] = runeToCount(r)
 	}
-	s = s[commaPos+1:]
+	s = s[width:]
+	if s[0] != ',' {
+		return game, false
+	}
+	s = s[1:]
 
 	// Row positive count
-	commaPos = strings.IndexRune(s, ',')
-	if commaPos == -1 {
-		return game, false
-	}
-	for i, r := range s[:commaPos] {
+	for i, r := range s[:height] {
 		game.rowPos[i] = runeToCount(r)
 	}
-	s = s[commaPos+1:]
+	s = s[height:]
+	if s[0] != ',' {
+		return game, false
+	}
+	s = s[1:]
 
 	// Col negative count
-	commaPos = strings.IndexRune(s, ',')
-	if commaPos == -1 {
-		return game, false
-	}
-	for i, r := range s[:commaPos] {
+	for i, r := range s[:width] {
 		game.colNeg[i] = runeToCount(r)
 	}
-	s = s[commaPos+1:]
-
-	// Row negative count
-	commaPos = strings.IndexRune(s, ',')
-	if commaPos == -1 {
+	s = s[width:]
+	if s[0] != ',' {
 		return game, false
 	}
-	for i, r := range s[:commaPos] {
+	s = s[1:]
+
+	// Row negative count
+	for i, r := range s[:height] {
 		game.rowNeg[i] = runeToCount(r)
 	}
-	s = s[commaPos+1:]
+	s = s[height:]
+	if s[0] != ',' {
+		return game, false
+	}
+	s = s[1:]
 
 	// Place frames
 	row := 0
