@@ -20,7 +20,12 @@ type Coord struct {
 
 var (
 	// Adjacents contains the offsets for each orthogonal neigbor on a grid.
-	Adjacents = []Coord{{Row: -1, Col: 0}, {Row: 0, Col: -1}, {Row: 0, Col: +1}, {Row: +1, Col: 0}}
+	Adjacents = []Coord{
+		{Row: -1, Col: 0},
+		{Row: 0, Col: -1},
+		{Row: 0, Col: +1},
+		{Row: +1, Col: 0},
+	}
 )
 
 // New creates a new board, populated with empty squares.
