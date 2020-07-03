@@ -406,7 +406,7 @@ func (game *Game) CountRow(row int, r rune) int {
 	return game.grid.CountRow(row, r)
 }
 
-// CountCol counts tthe number of occurrences of the given rune in a column.
+// CountCol counts the number of occurrences of the given rune in a column.
 func (game *Game) CountCol(col int, r rune) int {
 	if r == common.Positive {
 		return game.colPos[col]

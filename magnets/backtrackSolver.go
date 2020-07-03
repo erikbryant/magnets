@@ -7,6 +7,18 @@ import (
 // exceedLimits returns true if adding this rune to the row will exceed
 // the legal positive/negative count for this row, false otherwise.
 func (game *Game) exceedsRowLimits(row, col int, r rune) bool {
+	if game.Guess.CountRow(row, common.Positive) > game.CountRow(row, common.Positive) {
+		return true
+	}
+
+	if game.Guess.CountRow(row, common.Negative) > game.CountRow(row, common.Negative) {
+		return true
+	}
+
+	if game.Guess.CountRow(row, common.Neutral)+game.Guess.CountRow(row, common.Wall) > game.CountRow(row, common.Neutral) {
+		return true
+	}
+
 	return false
 }
 
@@ -20,10 +32,6 @@ func (game *Game) blankCell(row, col int) {
 // setCell attempts to set the given cell (and its other end). If it is a legal move
 // it sets the cells and returns true, false otherwise.
 func (game *Game) setCell(row, col int, r rune) bool {
-	if game.exceedsRowLimits(row, col, r) {
-		return false
-	}
-
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
 
 	// Should we be concerned about the polarity of the neighbors?
@@ -40,6 +48,11 @@ func (game *Game) setCell(row, col int, r rune) bool {
 
 	game.Guess.Set(row, col, r)
 	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
+
+	if game.exceedsRowLimits(row, col, r) {
+		game.blankCell(row, col)
+		return false
+	}
 
 	return true
 }
