@@ -117,7 +117,7 @@ func solvable(width, height int) {
 }
 
 func main() {
-	createCorpus()
+	// createCorpus()
 
 	stressTest()
 }
