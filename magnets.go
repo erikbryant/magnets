@@ -95,9 +95,9 @@ func deserializer(s string) {
 	solver.Solve(game)
 	if game.Solved() {
 		fmt.Println("Solved!", s)
-		game.Print()
 	} else {
 		fmt.Println("Could not solve!", s)
+		game.Print()
 	}
 }
 
@@ -159,7 +159,7 @@ func helper(file string, expected bool) {
 
 func testSolve() {
 	// helper("./solver/test_solve_to_be_verified.txt", true)
-	helper("./solver/test_solve_fail.txt", false)
+	helper("./solver/test_solve_fail_to_be_verified.txt", false)
 }
 
 func main() {
@@ -167,8 +167,9 @@ func main() {
 
 	// createCorpus()
 	// stressTest()
-	testSolve()
+	// testSolve()
 
+	deserializer("2x3:12,111,21,111,LRLRLR")
 	// deserializer("1x2:1,10,1,01,TB")
 	// deserializer("1x3:1,100,1,010,TB*")
 	// deserializer("2x2:11,11,11,11,TTBB")
