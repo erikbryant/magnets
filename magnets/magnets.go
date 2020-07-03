@@ -330,7 +330,7 @@ func (game *Game) Solved() bool {
 		if game.Guess.CountRow(row, common.Negative) != game.rowNeg[row] {
 			return false
 		}
-		if game.Guess.CountRow(row, common.Neutral) != game.Guess.Width()-(game.rowPos[row]+game.rowNeg[row]) {
+		if game.Guess.CountRow(row, common.Neutral)+game.Guess.CountRow(row, common.Wall) != game.Guess.Width()-(game.rowPos[row]+game.rowNeg[row]) {
 			return false
 		}
 	}
@@ -342,8 +342,20 @@ func (game *Game) Solved() bool {
 		if game.Guess.CountCol(col, common.Negative) != game.colNeg[col] {
 			return false
 		}
-		if game.Guess.CountCol(col, common.Neutral) != game.Guess.Height()-(game.colPos[col]+game.colNeg[col]) {
+		if game.Guess.CountCol(col, common.Neutral)+game.Guess.CountCol(col, common.Wall) != game.Guess.Height()-(game.colPos[col]+game.colNeg[col]) {
 			return false
+		}
+	}
+
+	// Validate that there are no two identical signs next to each other.
+	for cell := range game.Guess.Cells(common.Positive, common.Negative) {
+		row, col := cell.Unpack()
+		grid := game.Guess.Get(row, col)
+		for _, adj := range board.Adjacents {
+			r, c := adj.Unpack()
+			if game.Guess.Get(row+r, col+c) == grid {
+				return false
+			}
 		}
 	}
 
