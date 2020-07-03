@@ -31,5 +31,7 @@ func Negate(r rune) rune {
 	case Right:
 		return Left
 	}
+
+	// All others negate to themselves.
 	return r
 }
