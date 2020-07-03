@@ -51,10 +51,6 @@ func createCorpus() {
 		} else {
 			append("unsolved", serial)
 		}
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 
 		if games%10000 == 0 {
 			pctSolved := 100.0 * float64(solved) / float64(games)
@@ -162,8 +158,8 @@ func helper(file string, expected bool) {
 }
 
 func testSolve() {
-	helper("./solver/test_solve.txt", true)
-	// helper("./solver/test_solve_fail.txt", false)
+	// helper("./solver/test_solve_to_be_verified.txt", true)
+	helper("./solver/test_solve_fail.txt", false)
 }
 
 func main() {
