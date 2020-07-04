@@ -4,9 +4,27 @@ import (
 	"github.com/erikbryant/magnets/common"
 )
 
-// exceedLimits returns true if adding this rune to the row will exceed
-// the legal positive/negative count for this row, false otherwise.
-func (game *Game) exceedsRowLimits(row, col int, r rune) bool {
+// exceedsColLimits returns true if this row has exceeded the
+// legal positive/negative count for this column, false otherwise.
+func (game *Game) exceedsColLimits(col int) bool {
+	if game.Guess.CountCol(col, common.Positive) > game.CountCol(col, common.Positive) {
+		return true
+	}
+
+	if game.Guess.CountCol(col, common.Negative) > game.CountCol(col, common.Negative) {
+		return true
+	}
+
+	if game.Guess.CountCol(col, common.Neutral)+game.Guess.CountCol(col, common.Wall) > game.CountCol(col, common.Neutral) {
+		return true
+	}
+
+	return false
+}
+
+// exceedsRowLimits returns true if this row has exceeded the
+// legal positive/negative count for this row, false otherwise.
+func (game *Game) exceedsRowLimits(row int) bool {
 	if game.Guess.CountRow(row, common.Positive) > game.CountRow(row, common.Positive) {
 		return true
 	}
@@ -49,7 +67,7 @@ func (game *Game) setCell(row, col int, r rune) bool {
 	game.Guess.Set(row, col, r)
 	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
 
-	if game.exceedsRowLimits(row, col, r) {
+	if game.exceedsRowLimits(row) || game.exceedsColLimits(col) {
 		game.blankCell(row, col)
 		return false
 	}
