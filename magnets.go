@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/erikbryant/magnets/magnets"
 	"github.com/erikbryant/magnets/solver"
 	"math/rand"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -120,57 +118,18 @@ func solvable(width, height int) {
 	}
 }
 
-// helper runs solver tests against a given file.
-func helper(file string, expected bool) {
-	f, err := os.Open(file)
-	if err != nil {
-		fmt.Printf("Unable to open testcases %s %s\n", file, err)
-	}
-
-	defer f.Close()
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		testCase := scanner.Text()
-
-		testCase = strings.TrimSpace(testCase)
-
-		if len(testCase) == 0 {
-			continue
-		}
-
-		if strings.HasPrefix(testCase, "//") {
-			continue
-		}
-
-		game, ok := magnets.Deserialize(testCase)
-		if !ok {
-			fmt.Printf("ERROR: Unable to deserialize %s\n", testCase)
-			continue
-		}
-
-		solver.Solve(game)
-
-		if game.Solved() != expected {
-			fmt.Printf("ERROR: For %s expected solved to be %t\n", testCase, expected)
-			append("error", testCase)
-		}
-	}
-}
-
-func testSolve() {
-	helper("./solver/test_solve.txt", true)
-	helper("./solver/test_solve_fail.txt", false)
-}
-
 func main() {
 	start := time.Now()
 
 	deserializer("2x3:12,111,21,111,LRLRLR")
 
+	// deserializer("2x4:12,0111,21,0111,LRLRLRLR")
+	// deserializer("2x5:12,00111,21,00111,TTBBLRTTBB")
+	deserializer("2x6:13,101011,22,100111,LRLRTTBBTTBB")
+	// deserializer("2x6:13,101101,22,101110,LRLRLRLRTTBB")
+
 	// createCorpus()
 	// stressTest()
-	testSolve()
 
 	fmt.Println("Elapsed time:", time.Since(start))
 }
