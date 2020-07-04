@@ -77,6 +77,8 @@ func (cbs CBS) setFrame(game magnets.Game, row, col int, r rune) {
 	cbs[rowEnd][colEnd] = map[rune]bool{common.Negate(r): true}
 }
 
+// unsetPossibility removes the given rune from the CBS' list of potential
+// cell values.
 func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	if val, ok := cbs[row][col][r]; ok && val {
 		dirty = true
