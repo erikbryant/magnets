@@ -67,7 +67,7 @@ func TestCells(t *testing.T) {
 	l.Set(3, 0, common.Negative)
 
 	answer := 0
-	for _ = range l.Cells() {
+	for range l.Cells() {
 		answer++
 	}
 	expected := w * h
@@ -76,7 +76,7 @@ func TestCells(t *testing.T) {
 	}
 
 	answer = 0
-	for _ = range l.Cells(common.Positive) {
+	for range l.Cells(common.Positive) {
 		answer++
 	}
 	expected = 3
@@ -85,7 +85,7 @@ func TestCells(t *testing.T) {
 	}
 
 	answer = 0
-	for _ = range l.Cells(common.Negative, common.Neutral) {
+	for range l.Cells(common.Negative, common.Neutral) {
 		answer++
 	}
 	expected = 5

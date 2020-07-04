@@ -356,7 +356,7 @@ func (cbs CBS) validate(game magnets.Game) error {
 		// This is already solved, so the CBS should only have r in it.
 		for key := range cbs[row][col] {
 			if key != r {
-				return fmt.Errorf("ERROR: CBS %d, %d had extraneous '%c'\n", row, col, key)
+				return fmt.Errorf("ERROR: CBS %d, %d had extraneous '%c'", row, col, key)
 			}
 		}
 	}
@@ -375,7 +375,7 @@ func (cbs CBS) validate(game magnets.Game) error {
 				case common.Wall:
 					continue
 				default:
-					return fmt.Errorf("ERROR: CBS %d, %d has unexpected '%c'\n", row, col, key)
+					return fmt.Errorf("ERROR: CBS %d, %d has unexpected '%c'", row, col, key)
 				}
 			}
 		}
