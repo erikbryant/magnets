@@ -146,11 +146,14 @@ func helper(file string, expected bool) {
 		game, ok := magnets.Deserialize(testCase)
 		if !ok {
 			fmt.Printf("ERROR: Unable to deserialize %s\n", testCase)
+			continue
 		}
 
 		solver.Solve(game)
+
 		if game.Solved() != expected {
 			fmt.Printf("ERROR: For %s expected solved to be %t\n", testCase, expected)
+			append("error", testCase)
 		}
 	}
 }
@@ -163,11 +166,11 @@ func testSolve() {
 func main() {
 	start := time.Now()
 
+	deserializer("2x3:12,111,21,111,LRLRLR")
+
 	// createCorpus()
 	// stressTest()
-	// testSolve()
-
-	deserializer("2x3:12,111,21,111,LRLRLR")
+	testSolve()
 
 	fmt.Println("Elapsed time:", time.Since(start))
 }

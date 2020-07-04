@@ -272,6 +272,70 @@ func (cbs CBS) needAll(game magnets.Game) {
 	}
 }
 
+// oddRowAllMagnets checks to see if the entire row is full of magnets. If it
+// is, and if the row length is odd, then we know the pattern of the magnets.
+func (cbs CBS) oddRowAllMagnets(game magnets.Game) {
+	// If the length is not odd then there is nothing we can determine.
+	if game.Guess.Width()%2 == 0 {
+		return
+	}
+
+	for row := 0; row < game.Guess.Height(); row++ {
+		if game.CountRow(row, common.Positive)+game.CountRow(row, common.Negative) == game.Guess.Width() {
+			// There is only one way the magnets can be arranged.
+			// The polarity with the larger count goes first.
+			var polarity rune
+
+			if game.CountRow(row, common.Positive) > game.CountRow(row, common.Negative) {
+				polarity = common.Positive
+			} else {
+				polarity = common.Negative
+			}
+
+			for col := 0; col < game.Guess.Width(); col++ {
+				game.Guess.Set(row, col, polarity)
+				polarity = common.Negate(polarity)
+				cbs.unsetPossibility(row, col, polarity)
+				cbs.unsetPossibility(row, col, common.Neutral)
+			}
+
+			dirty = true
+		}
+	}
+}
+
+// oddColAllMagnets checks to see if the entire col is full of magnets. If it
+// is, and if the col length is odd, then we know the pattern of the magnets.
+func (cbs CBS) oddColAllMagnets(game magnets.Game) {
+	// If the length is not odd then there is nothing we can determine.
+	if game.Guess.Height()%2 == 0 {
+		return
+	}
+
+	for col := 0; col < game.Guess.Width(); col++ {
+		if game.CountCol(col, common.Positive)+game.CountCol(col, common.Negative) == game.Guess.Height() {
+			// There is only one way the magnets can be arranged.
+			// The polarity with the larger count goes first.
+			var polarity rune
+
+			if game.CountCol(col, common.Positive) > game.CountCol(col, common.Negative) {
+				polarity = common.Positive
+			} else {
+				polarity = common.Negative
+			}
+
+			for row := 0; row < game.Guess.Height(); row++ {
+				game.Guess.Set(row, col, polarity)
+				polarity = common.Negate(polarity)
+				cbs.unsetPossibility(row, col, polarity)
+				cbs.unsetPossibility(row, col, common.Neutral)
+			}
+
+			dirty = true
+		}
+	}
+}
+
 // doubleSingle() looks for cases where, based on the length of the frame
 // (1 or 2 cells in this row/col) we know the frame can/cannot be a magnet.
 // For instance if we need 2 polarities (1 plus and 1 minus) and there is
@@ -405,6 +469,9 @@ func Solve(game magnets.Game) {
 
 	cbs.zeroInRow(game)
 	cbs.zeroInCol(game)
+
+	cbs.oddRowAllMagnets(game)
+	cbs.oddColAllMagnets(game)
 
 	attempts := 0
 	for {
