@@ -90,9 +90,14 @@ func deserializer(s string) {
 		return
 	}
 
-	fmt.Println("Solutions:", game.CountSolutions(0, 0))
+	solutions := game.CountSolutions(0, 0)
+	if solutions != 1 {
+		fmt.Println("Solutions:", solutions)
+		return
+	}
 
 	solver.Solve(game)
+
 	if game.Solved() {
 		fmt.Println("Solved!", s)
 	} else {
@@ -143,23 +148,16 @@ func helper(file string, expected bool) {
 			fmt.Printf("ERROR: Unable to deserialize %s\n", testCase)
 		}
 
-		solutions := game.CountSolutions(0, 0)
-		if solutions == 1 {
-			append("test_success", testCase)
-		} else {
-			append("test_fail", testCase)
+		solver.Solve(game)
+		if game.Solved() != expected {
+			fmt.Printf("ERROR: For %s expected solved to be %t\n", testCase, expected)
 		}
-
-		// solver.Solve(game)
-		// if game.Solved() != expected {
-		// 	fmt.Println("ERROR: For %s expected solved to be %t", testCase, expected)
-		// }
 	}
 }
 
 func testSolve() {
-	// helper("./solver/test_solve_to_be_verified.txt", true)
-	helper("./solver/test_solve_fail_to_be_verified.txt", false)
+	helper("./solver/test_solve.txt", true)
+	helper("./solver/test_solve_fail.txt", false)
 }
 
 func main() {
@@ -170,11 +168,6 @@ func main() {
 	// testSolve()
 
 	deserializer("2x3:12,111,21,111,LRLRLR")
-	// deserializer("1x2:1,10,1,01,TB")
-	// deserializer("1x3:1,100,1,010,TB*")
-	// deserializer("2x2:11,11,11,11,TTBB")
-	// deserializer("6x6:233322,123333,323232,033333,LRTLRTTTBTTBBBTBBTTTBTTBBBTBBTLRBLRB")
-	// deserializer("16x3:2121212121212120,878,1212121212121211,887,TTTLRTLRLRTTTTLRBBBLRBTTLRBBBBTTLRLRLRBBLRLRLRBB")
 
-	fmt.Println("testSolve took", time.Since(start))
+	fmt.Println("Elapsed time:", time.Since(start))
 }
