@@ -60,7 +60,9 @@ func new(game magnets.Game) CBS {
 	return cbs
 }
 
-// setFrame takes a coordinate and a polarity, sets that, and sets the other end of the frame to correspond.
+// setFrame takes a coordinate and a polarity, sets that, and sets the other end
+// of the frame to correspond. This is different from the other implementations
+// in that it also keeps track of whether the board is dirty and updates the CBS.
 func (cbs CBS) setFrame(game magnets.Game, row, col int, r rune) {
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
 
@@ -87,7 +89,8 @@ func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	delete(cbs[row][col], r)
 }
 
-// justOne iterates through all empty cells. For any that have just one possibility left in the cbs, it sets that frame.
+// justOne iterates through all empty cells. For any that have just one
+// possibility left in the cbs, it sets that frame.
 func (cbs CBS) justOne(game magnets.Game) {
 	for cell := range game.Guess.Cells(common.Empty) {
 		row, col := cell.Unpack()
@@ -105,22 +108,24 @@ func (cbs CBS) justOne(game magnets.Game) {
 	}
 }
 
-// rowNeeds calculates how many of a given polarity are still needed in order to be complete.
+// rowNeeds calculates how many of a given polarity are still needed in order
+// to be complete.
 func rowNeeds(game magnets.Game, row int, r rune) int {
 	needs := game.CountRow(row, r)
 	has := game.Guess.CountRow(row, r)
 	return needs - has
 }
 
-// colNeeds calculates how many of a given polarity are still needed in order to be complete.
+// colNeeds calculates how many of a given polarity are still needed in order
+// to be complete.
 func colNeeds(game magnets.Game, col int, r rune) int {
 	needs := game.CountCol(col, r)
 	has := game.Guess.CountCol(col, r)
 	return needs - has
 }
 
-// rowHasSpaceForTotal counts how many *possible* locations are present for the given polarity.
-// This includes cells that have already been solved.
+// rowHasSpaceForTotal counts how many *possible* locations are present for the
+// given polarity. This includes cells that have already been solved.
 func (cbs CBS) rowHasSpaceForTotal(game magnets.Game, row int, r rune) int {
 	count := 0
 	for col := 0; col < game.Guess.Width(); col++ {
@@ -131,8 +136,8 @@ func (cbs CBS) rowHasSpaceForTotal(game magnets.Game, row int, r rune) int {
 	return count
 }
 
-// colHasSpaceForTotal counts how many *possible* locations are present for the given polarity.
-// This includes cells that have already been solved.
+// colHasSpaceForTotal counts how many *possible* locations are present for the
+// given polarity. This includes cells that have already been solved.
 func (cbs CBS) colHasSpaceForTotal(game magnets.Game, col int, r rune) int {
 	count := 0
 	for row := 0; row < game.Guess.Height(); row++ {
@@ -143,8 +148,8 @@ func (cbs CBS) colHasSpaceForTotal(game magnets.Game, col int, r rune) int {
 	return count
 }
 
-// rowHasSpaceForRemaining counts how many *possible* locations are present for the given polarity.
-// This DOES NOT INCLUDE cells that have already been solved.
+// rowHasSpaceForRemaining counts how many *possible* locations are present for
+// the given polarity. This DOES NOT INCLUDE cells that have already been solved.
 func (cbs CBS) rowHasSpaceForRemaining(game magnets.Game, row int, r rune) int {
 	count := 0
 	for col := 0; col < game.Guess.Width(); col++ {
@@ -155,8 +160,8 @@ func (cbs CBS) rowHasSpaceForRemaining(game magnets.Game, row int, r rune) int {
 	return count
 }
 
-// colHasSpaceForRemaining counts how many *possible* locations are present for the given polarity.
-// This DOES NOT INCLUDE cells that have already been solved.
+// colHasSpaceForRemaining counts how many *possible* locations are present for
+// the given polarity. This DOES NOT INCLUDE cells that have already been solved.
 func (cbs CBS) colHasSpaceForRemaining(game magnets.Game, col int, r rune) int {
 	count := 0
 	for row := 0; row < game.Guess.Height(); row++ {
@@ -167,7 +172,8 @@ func (cbs CBS) colHasSpaceForRemaining(game magnets.Game, col int, r rune) int {
 	return count
 }
 
-// satisfied looks at each row/col to see if there are exactly as many spaces to put a given polarity as there are needed.
+// satisfied looks at each row/col to see if there are exactly as many spaces
+// to put a given polarity as there are needed.
 func (cbs CBS) satisfied(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative, common.Neutral} {
 		// Row is satisfied in this category? Set those frames. Clear this possibility elsewhere.
@@ -195,8 +201,8 @@ func (cbs CBS) satisfied(game magnets.Game) {
 	return
 }
 
-// needAll checks to see if the number of pos+neg needed is equal to the number of frames that
-// are still undecided. If so, none of those frames can be neutral.
+// needAll checks to see if the number of pos+neg needed is equal to the number
+// of frames that are still undecided. If so, none of those frames can be neutral.
 // NOTE: Once doubleSingle() is written this function will no longer be needed.
 func (cbs CBS) needAll(game magnets.Game) {
 	// If there are any that we know what they must be, but have not set them
@@ -266,7 +272,11 @@ func (cbs CBS) needAll(game magnets.Game) {
 	}
 }
 
-// doubleSingle() looks for cases where, based on the length of the frame (1 or 2 cells in this row/col) we know the frame can/cannot be a magnet. For instance if we need 2 polarities (1 plus and 1 minus) and there is 1 horizontal and 1 vertical frame we know the vertical frame cannot have a polarity.
+// doubleSingle() looks for cases where, based on the length of the frame
+// (1 or 2 cells in this row/col) we know the frame can/cannot be a magnet.
+// For instance if we need 2 polarities (1 plus and 1 minus) and there is
+// 1 horizontal and 1 vertical frame we know the vertical frame cannot have
+// a polarity.
 func (cbs CBS) doubleSingle(game magnets.Game) {
 
 	// Enumerate each of the combinations of frames (that are undecided) in the
@@ -287,7 +297,8 @@ func (cbs CBS) doubleSingle(game magnets.Game) {
 
 }
 
-// resolveNeighbors() propagates any constraint a cell has (like it can only be negative) to its neighbor (which can then only be positive).
+// resolveNeighbors() propagates any constraint a cell has (like it can only be
+// negative) to its neighbor (which can then only be positive).
 func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
@@ -318,7 +329,8 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	}
 }
 
-// zeroInRow looks for rows that have no positives or that have no negatives and removes those possibilities from the cbs.
+// zeroInRow looks for rows that have no positives or that have no negatives
+// and removes those possibilities from the cbs.
 func (cbs CBS) zeroInRow(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative} {
 		for row := 0; row < game.Guess.Height(); row++ {
@@ -332,7 +344,8 @@ func (cbs CBS) zeroInRow(game magnets.Game) {
 	}
 }
 
-// zeroInCol looks for columns that have no positives or that have no negatives and removes those possibilities from the cbs.
+// zeroInCol looks for columns that have no positives or that have no negatives
+// and removes those possibilities from the cbs.
 func (cbs CBS) zeroInCol(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative} {
 		for col := 0; col < game.Guess.Width(); col++ {

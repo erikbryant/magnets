@@ -135,6 +135,7 @@ func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
 	// Set the other end of the frame.
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
 	if rowEnd == -1 && colEnd == -1 {
+		// This was a wall. There is no other end.
 		return
 	}
 	if l.Get(rowEnd, colEnd) != common.Empty {
@@ -168,7 +169,6 @@ func (game *Game) GetFrameEnd(row, col int) (int, int) {
 	case common.Wall:
 		return -1, -1
 	default:
-		panic("asdf")
 		fmt.Printf("ERROR: frame at %d, %d unexpected '%c'\n", row, col, game.frames.Get(row, col))
 	}
 

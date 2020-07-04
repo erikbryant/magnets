@@ -50,8 +50,6 @@ func (game *Game) blankCell(row, col int) {
 // setCell attempts to set the given cell (and its other end). If it is a legal move
 // it sets the cells and returns true, false otherwise.
 func (game *Game) setCell(row, col int, r rune) bool {
-	rowEnd, colEnd := game.GetFrameEnd(row, col)
-
 	// Should we be concerned about the polarity of the neighbors?
 	if common.Negate(r) != r {
 		if game.Guess.Get(row-1, col) == r {
@@ -64,9 +62,12 @@ func (game *Game) setCell(row, col int, r rune) bool {
 		// of the frame to see if it would be an invalid placement.
 	}
 
+	rowEnd, colEnd := game.GetFrameEnd(row, col)
+
 	game.Guess.Set(row, col, r)
 	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
 
+	// If this was an invalid move, undo it.
 	if game.exceedsRowLimits(row) || game.exceedsColLimits(col) {
 		game.blankCell(row, col)
 		return false
