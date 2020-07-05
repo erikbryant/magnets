@@ -193,6 +193,6 @@ func helper(t *testing.T, file string, expected bool) {
 
 // This is becoming a regression test. If the run time gets too high, move out of the unit tests.
 func TestSolve(t *testing.T) {
-	helper(t, "test_solve.txt", true)
-	helper(t, "test_solve_fail.txt", false)
+	helper(t, "testcases_solve.txt", true)
+	helper(t, "testcases_solve_fail.txt", false)
 }
