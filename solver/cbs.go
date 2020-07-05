@@ -13,6 +13,9 @@ package solver
 // As the solver works through the information it is given it eliminates possibilities
 // as it proves them non-possible. When the list of possibilities for a cell drops to
 // just one, the solver sets that in the Guess grid as a known entity.
+//
+// The CBS should never drop to zero possibilities. The end state is that there is
+// exactly one possibility.
 
 import (
 	"fmt"
@@ -86,6 +89,11 @@ func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	}
 
 	delete(cbs[row][col], r)
+
+	if len(cbs[row][col]) == 0 {
+		msg := fmt.Sprintf("All possibilities have been deleted from cbs %d, %d", row, col)
+		panic(msg)
+	}
 }
 
 // rowNeeds calculates how many of a given polarity are still needed in order
@@ -167,6 +175,9 @@ func (cbs CBS) validate(game magnets.Game) error {
 				return fmt.Errorf("ERROR: CBS %d, %d had extraneous '%c'", row, col, key)
 			}
 		}
+		if len(cbs[row][col]) != 1 {
+			return fmt.Errorf("ERROR: CBS %d, %d has wrong length. Expected 1 got %d", row, col, len(cbs[row][col]))
+		}
 	}
 
 	// Validate that the CBS contains only expected possibilities.
@@ -190,4 +201,29 @@ func (cbs CBS) validate(game magnets.Game) error {
 	}
 
 	return nil
+}
+
+// print prints a formatted representation of the cbs.
+func (cbs CBS) print() {
+	fmt.Printf("CBS (%dx%d)\n", len(cbs[0]), len(cbs))
+
+	fmt.Printf("   + ")
+	for i := 0; i < len(cbs[0]); i++ {
+		fmt.Printf("―")
+	}
+	fmt.Printf("\n")
+
+	for row := range cbs {
+		fmt.Printf("   | ")
+		for col := range cbs[row] {
+			fmt.Printf("%d", len(cbs[row][col]))
+		}
+		fmt.Println(" |")
+	}
+
+	fmt.Printf("     ")
+	for i := 0; i < len(cbs[0]); i++ {
+		fmt.Printf("―")
+	}
+	fmt.Printf(" -\n")
 }

@@ -131,16 +131,6 @@ func TestUnsetPossibility(t *testing.T) {
 	if !dirty {
 		t.Errorf("ERROR: Expected dirty = true, got dirty = %v", dirty)
 	}
-
-	dirty = false
-	cbs.unsetPossibility(0, 0, common.Neutral)
-	answer = len(cbs[0][0])
-	if answer != 0 {
-		t.Errorf("ERROR: Expected 0, got %d", answer)
-	}
-	if !dirty {
-		t.Errorf("ERROR: Expected dirty = true, got dirty = %v", dirty)
-	}
 }
 
 func TestRowNeeds(t *testing.T) {
