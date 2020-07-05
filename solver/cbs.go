@@ -19,6 +19,7 @@ package solver
 
 import (
 	"fmt"
+	"github.com/erikbryant/magnets/board"
 	"github.com/erikbryant/magnets/common"
 	"github.com/erikbryant/magnets/magnets"
 )
@@ -166,6 +167,18 @@ func (cbs CBS) validate(game magnets.Game) error {
 		return fmt.Errorf("Invalid game board state detected")
 	}
 
+	// Validate that there are no two identical signs next to each other.
+	for cell := range game.Guess.Cells(common.Positive, common.Negative) {
+		row, col := cell.Unpack()
+		guess := game.Guess.Get(row, col)
+		for _, adj := range board.Adjacents {
+			r, c := adj.Unpack()
+			if game.Guess.Get(row+r, col+c) == guess {
+				return fmt.Errorf("ERROR: '%c' sign at %d, %d is not consistent", guess, row, col)
+			}
+		}
+	}
+
 	for cell := range game.Guess.Cells(common.Positive, common.Negative, common.Neutral) {
 		row, col := cell.Unpack()
 		r := game.Guess.Get(row, col)
@@ -216,7 +229,13 @@ func (cbs CBS) print() {
 	for row := range cbs {
 		fmt.Printf("   | ")
 		for col := range cbs[row] {
-			fmt.Printf("%d", len(cbs[row][col]))
+			if len(cbs[row][col]) == 1 {
+				for r := range cbs[row][col] {
+					fmt.Printf("%c", r)
+				}
+			} else {
+				fmt.Printf("%d", len(cbs[row][col]))
+			}
 		}
 		fmt.Println(" |")
 	}
