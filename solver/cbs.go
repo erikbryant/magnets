@@ -115,25 +115,67 @@ func colNeeds(game magnets.Game, col int, r rune) int {
 
 // rowHasSpaceForTotal counts how many *possible* locations are present for the
 // given polarity. This includes cells that have already been solved.
+// Note that each horizontal frame in this row only adds one possibility
+// since both ends of the magnet cannot be the same polarity.
 func (cbs CBS) rowHasSpaceForTotal(game magnets.Game, row int, r rune) int {
 	count := 0
+
 	for col := 0; col < game.Guess.Width(); col++ {
-		if cbs[row][col][r] {
-			count++
+		// For negatable possibilities the counting is a little more complicated.
+		if r != common.Negate(r) {
+			direction := game.GetFrame(row, col)
+			switch direction {
+			case common.Right:
+				continue
+			case common.Left:
+				if cbs[row][col][r] || cbs[row][col+1][r] {
+					count++
+				}
+			default:
+				if cbs[row][col][r] {
+					count++
+				}
+			}
+		} else {
+			if cbs[row][col][r] {
+				count++
+			}
 		}
 	}
+
 	return count
 }
 
 // colHasSpaceForTotal counts how many *possible* locations are present for the
 // given polarity. This includes cells that have already been solved.
+// Note that each vertical frame in this row only adds one possibility
+// since both ends of the magnet cannot be the same polarity.
 func (cbs CBS) colHasSpaceForTotal(game magnets.Game, col int, r rune) int {
 	count := 0
+
 	for row := 0; row < game.Guess.Height(); row++ {
-		if cbs[row][col][r] {
-			count++
+		// For negatable possibilities the counting is a little more complicated.
+		if r != common.Negate(r) {
+			direction := game.GetFrame(row, col)
+			switch direction {
+			case common.Down:
+				continue
+			case common.Up:
+				if cbs[row][col][r] || cbs[row+1][col][r] {
+					count++
+				}
+			default:
+				if cbs[row][col][r] {
+					count++
+				}
+			}
+		} else {
+			if cbs[row][col][r] {
+				count++
+			}
 		}
 	}
+
 	return count
 }
 

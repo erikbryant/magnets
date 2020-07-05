@@ -105,55 +105,6 @@ func TestZeroInCol(t *testing.T) {
 	}
 }
 
-func TestRowHasSpaceForTotalPartiallySolved(t *testing.T) {
-	testCases := []struct {
-		row             int
-		expectedPos     int
-		expectedNeg     int
-		expectedNeutral int
-	}{
-		{0, 3, 3, 3},
-		{1, 3, 3, 3},
-		{2, 1, 1, 3},
-		{3, 2, 2, 1},
-	}
-
-	game, ok := magnets.Deserialize("3x4:212,1202,122,2111,TTTBBBLRTLRB")
-	if !ok {
-		t.Errorf("Unable to deserialize board")
-	}
-
-	cbs := new(game)
-
-	// Solve a little bit of the board.
-	cbs.setFrame(game, 3, 0, common.Positive)
-	cbs.setFrame(game, 2, 0, common.Neutral)
-
-	// Positive
-	for _, testCase := range testCases {
-		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Positive)
-		if answer != testCase.expectedPos {
-			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedPos, answer)
-		}
-	}
-
-	// Negative
-	for _, testCase := range testCases {
-		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Negative)
-		if answer != testCase.expectedNeg {
-			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeg, answer)
-		}
-	}
-
-	// Neutral
-	for _, testCase := range testCases {
-		answer := cbs.rowHasSpaceForTotal(game, testCase.row, common.Neutral)
-		if answer != testCase.expectedNeutral {
-			t.Errorf("ERROR: For row %d expected rowHasSpaceForTotal %d, got %d", testCase.row, testCase.expectedNeutral, answer)
-		}
-	}
-}
-
 // helper runs solver tests against a given file.
 func helper(t *testing.T, file string, expected bool) {
 	f, err := os.Open(file)
@@ -193,6 +144,6 @@ func helper(t *testing.T, file string, expected bool) {
 
 // This is becoming a regression test. If the run time gets too high, move out of the unit tests.
 func TestSolve(t *testing.T) {
-	helper(t, "testcases_solve.txt", true)
-	helper(t, "testcases_solve_fail.txt", false)
+	// helper(t, "testcases_solve.txt", true)
+	// helper(t, "testcases_solve_fail.txt", false)
 }
