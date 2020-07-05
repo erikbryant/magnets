@@ -122,28 +122,28 @@ func (game *Game) Serialize() (string, bool) {
 
 	// Col positive count
 	for col := 0; col < game.grid.Width(); col++ {
-		count := game.grid.CountCol(col, common.Positive)
+		count := game.CountCol(col, common.Positive)
 		serial += string(countToRune(count))
 	}
 	serial += ","
 
 	// Row positive count
 	for row := 0; row < game.grid.Height(); row++ {
-		count := game.grid.CountRow(row, common.Positive)
+		count := game.CountRow(row, common.Positive)
 		serial += string(countToRune(count))
 	}
 	serial += ","
 
 	// Col negative count
 	for col := 0; col < game.grid.Width(); col++ {
-		count := game.grid.CountCol(col, common.Negative)
+		count := game.CountCol(col, common.Negative)
 		serial += string(countToRune(count))
 	}
 	serial += ","
 
 	// Row negative count
 	for row := 0; row < game.grid.Height(); row++ {
-		count := game.grid.CountRow(row, common.Negative)
+		count := game.CountRow(row, common.Negative)
 		serial += string(countToRune(count))
 	}
 	serial += ","
@@ -268,7 +268,7 @@ func (game *Game) Print() {
 	fmt.Printf("\n")
 	s, ok := game.Serialize()
 	if !ok {
-		s = "Unable to serialize game"
+		s = "ERROR: Unable to serialize game!"
 	}
 	fmt.Println(s)
 	game.frames.Print("Frames", game.rowPos, game.rowNeg, game.colPos, game.colNeg)

@@ -63,6 +63,11 @@ func TestSerialize(t *testing.T) {
 	game := Game{
 		grid:   board.New(2, 4),
 		frames: board.New(2, 4),
+		Guess:  board.New(2, 4),
+		colPos: []int{2, 1},
+		rowPos: []int{1, 0, 1, 1},
+		colNeg: []int{1, 2},
+		rowNeg: []int{1, 0, 1, 1},
 	}
 
 	game.frames.Set(0, 0, common.Left)
@@ -91,6 +96,27 @@ func TestSerialize(t *testing.T) {
 	}
 	if answer != expected {
 		t.Errorf("ERROR: Expected: %s Got: %s", expected, answer)
+	}
+}
+
+func TestSerialize_2(t *testing.T) {
+	testCases := []string{
+		"2x6:13,101011,22,100111,LRLRTTBBTTBB",
+		"3x5:132,12111,222,21210,LRTTTBBBTTTBBB*",
+	}
+
+	for _, testCase := range testCases {
+		game, ok := Deserialize(testCase)
+		if !ok {
+			t.Errorf("ERROR: Unable to deserialize %s", testCase)
+		}
+		answer, ok := game.Serialize()
+		if !ok {
+			t.Errorf("ERROR: Unable to serialize %s", testCase)
+		}
+		if answer != testCase {
+			t.Errorf("ERROR: serialize failed to match original. Expected %s got %s", testCase, answer)
+		}
 	}
 }
 
