@@ -87,9 +87,11 @@ func (cbs CBS) needAll(game magnets.Game) {
 				}
 			}
 			if needs == provides {
-				// All are needed for signs. None can be neutral.
+				// All that remain undecided are needed for signs. None can be neutral.
 				for col := 0; col < game.Guess.Width(); col++ {
-					cbs.unsetPossibility(row, col, common.Neutral)
+					if len(cbs[row][col]) > 1 {
+						cbs.unsetPossibility(row, col, common.Neutral)
+					}
 				}
 			}
 		}
@@ -117,9 +119,11 @@ func (cbs CBS) needAll(game magnets.Game) {
 				}
 			}
 			if needs == provides {
-				// All are needed for signs. None can be neutral.
+				// All that remain undecided are needed for signs. None can be neutral.
 				for row := 0; row < game.Guess.Height(); row++ {
-					cbs.unsetPossibility(row, col, common.Neutral)
+					if len(cbs[row][col]) > 1 {
+						cbs.unsetPossibility(row, col, common.Neutral)
+					}
 				}
 			}
 		}
@@ -232,7 +236,7 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 		}
 	}
 
-	// If a cell borders one that is already identified, update the cbs.
+	// If a cell borders one whose polarity is already identified, update the cbs.
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
 		for _, adj := range board.Adjacents {
@@ -240,8 +244,12 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 			switch game.Guess.Get(row+r, col+c) {
 			case common.Positive:
 				cbs.unsetPossibility(row, col, common.Positive)
+				rowEnd, colEnd := game.GetFrameEnd(row, col)
+				cbs.unsetPossibility(rowEnd, colEnd, common.Negative)
 			case common.Negative:
 				cbs.unsetPossibility(row, col, common.Negative)
+				rowEnd, colEnd := game.GetFrameEnd(row, col)
+				cbs.unsetPossibility(rowEnd, colEnd, common.Positive)
 			}
 		}
 	}
@@ -295,6 +303,7 @@ func Solve(game magnets.Game) {
 		if err != nil {
 			fmt.Println(err)
 			game.Print()
+			cbs.print()
 			break
 		}
 
