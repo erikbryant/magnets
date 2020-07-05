@@ -8,6 +8,22 @@ import (
 	"time"
 )
 
+// Game contains all of the representations to hold state for a game of magnets.
+type Game struct {
+	frames board.Board
+	grid   board.Board
+	Guess  board.Board
+
+	// The row/col count cache
+	colPos []int
+	rowPos []int
+	colNeg []int
+	rowNeg []int
+
+	// The string, if deserialized
+	serial string
+}
+
 // init sets the random seed.
 func init() {
 	rand.Seed(time.Now().UnixNano())

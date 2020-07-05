@@ -262,3 +262,16 @@ func Deserialize(s string) (Game, bool) {
 
 	return game, true
 }
+
+// Print prints an ASCII representation of the board.
+func (game *Game) Print() {
+	fmt.Printf("\n")
+	s, ok := game.Serialize()
+	if !ok {
+		s = "Unable to serialize game"
+	}
+	fmt.Println(s)
+	game.frames.Print("Frames", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
+	game.grid.Print("Grid", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
+	game.Guess.Print("Guess", []int{}, []int{}, []int{}, []int{})
+}

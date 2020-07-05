@@ -15,30 +15,6 @@ import (
 	"github.com/erikbryant/magnets/common"
 )
 
-// Game contains all of the representations to hold state for a game of magnets.
-type Game struct {
-	frames board.Board
-	grid   board.Board
-	Guess  board.Board
-
-	// The row/col count cache
-	colPos []int
-	rowPos []int
-	colNeg []int
-	rowNeg []int
-
-	// The string, if deserialized
-	serial string
-}
-
-// Print prints an ASCII representation of the board.
-func (game *Game) Print() {
-	fmt.Printf("\n")
-	game.frames.Print("Frames", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
-	game.grid.Print("Grid", game.rowPos, game.rowNeg, game.colPos, game.colNeg)
-	game.Guess.Print("Guess", []int{}, []int{}, []int{}, []int{})
-}
-
 // Valid returns true if the game state is valid, false otherwise.
 func (game *Game) Valid() bool {
 	// Validate board size bounds.
