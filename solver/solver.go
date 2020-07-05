@@ -35,17 +35,26 @@ func (cbs CBS) satisfied(game magnets.Game) {
 			if rowNeeds(game, row, category) == cbs.rowHasSpaceForTotal(game, row, category) {
 				for col := 0; col < game.Guess.Width(); col++ {
 					if cbs[row][col][category] {
-						cbs.setFrame(game, row, col, category)
+						if category == common.Neutral {
+							cbs.setFrame(game, row, col, category)
+						} else {
+							cbs.unsetPossibility(row, col, common.Neutral)
+						}
 					}
 				}
 			}
 		}
+
 		// Col is satisfied in this category? Set those frames. Clear this possibility elsewhere.
 		for col := 0; col < game.Guess.Width(); col++ {
 			if colNeeds(game, col, category) == cbs.colHasSpaceForTotal(game, col, category) {
 				for row := 0; row < game.Guess.Height(); row++ {
 					if cbs[row][col][category] {
-						cbs.setFrame(game, row, col, category)
+						if category == common.Neutral {
+							cbs.setFrame(game, row, col, category)
+						} else {
+							cbs.unsetPossibility(row, col, common.Neutral)
+						}
 					}
 				}
 			}
@@ -239,16 +248,18 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	// If a cell borders one whose polarity is already identified, update the cbs.
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
+		rowEnd, colEnd := game.GetFrameEnd(row, col)
+		if rowEnd == -1 || colEnd == -1 {
+			continue
+		}
 		for _, adj := range board.Adjacents {
 			r, c := adj.Unpack()
 			switch game.Guess.Get(row+r, col+c) {
 			case common.Positive:
 				cbs.unsetPossibility(row, col, common.Positive)
-				rowEnd, colEnd := game.GetFrameEnd(row, col)
 				cbs.unsetPossibility(rowEnd, colEnd, common.Negative)
 			case common.Negative:
 				cbs.unsetPossibility(row, col, common.Negative)
-				rowEnd, colEnd := game.GetFrameEnd(row, col)
 				cbs.unsetPossibility(rowEnd, colEnd, common.Positive)
 			}
 		}
