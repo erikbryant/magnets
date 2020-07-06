@@ -13,16 +13,9 @@ func (cbs CBS) justOne(game magnets.Game) {
 	for cell := range game.Guess.Cells(common.Empty) {
 		row, col := cell.Unpack()
 
-		if len(cbs[row][col]) != 1 {
-			continue
+		if len(cbs[row][col]) == 1 {
+			cbs.setFrame(game, row, col, cbs.getOnlyPossibility(row, col))
 		}
-
-		var r rune
-		for key := range cbs[row][col] {
-			r = key
-		}
-
-		cbs.setFrame(game, row, col, r)
 	}
 }
 
@@ -79,29 +72,10 @@ func (cbs CBS) needAll(game magnets.Game) {
 			if needs == 0 {
 				continue
 			}
-			provides := 0
-			for col := 0; col < game.Guess.Width(); col++ {
-				direction := game.GetFrame(row, col)
-				switch direction {
-				case common.Right:
-					continue
-				case common.Left:
-					if cbs[row][col][category] || cbs[row][col+1][category] {
-						provides++
-					}
-				default:
-					if cbs[row][col][category] {
-						provides++
-					}
-				}
-			}
+			provides := cbs.rowHasSpaceForTotal(game, row, category)
 			if needs == provides {
 				// All that remain undecided are needed for signs. None can be neutral.
-				for col := 0; col < game.Guess.Width(); col++ {
-					if len(cbs[row][col]) > 1 {
-						cbs.unsetPossibility(row, col, common.Neutral)
-					}
-				}
+				cbs.unsetPossibilityRow(game, row, common.Neutral)
 			}
 		}
 
@@ -111,29 +85,10 @@ func (cbs CBS) needAll(game magnets.Game) {
 			if needs == 0 {
 				continue
 			}
-			provides := 0
-			for row := 0; row < game.Guess.Height(); row++ {
-				direction := game.GetFrame(row, col)
-				switch direction {
-				case common.Down:
-					continue
-				case common.Up:
-					if cbs[row][col][category] || cbs[row+1][col][category] {
-						provides++
-					}
-				default:
-					if cbs[row][col][category] {
-						provides++
-					}
-				}
-			}
+			provides := cbs.colHasSpaceForTotal(game, col, category)
 			if needs == provides {
 				// All that remain undecided are needed for signs. None can be neutral.
-				for row := 0; row < game.Guess.Height(); row++ {
-					if len(cbs[row][col]) > 1 {
-						cbs.unsetPossibility(row, col, common.Neutral)
-					}
-				}
+				cbs.unsetPossibilityCol(game, col, common.Neutral)
 			}
 		}
 	}
@@ -234,7 +189,7 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
 		rowEnd, colEnd := game.GetFrameEnd(row, col)
-		if rowEnd == -1 && colEnd == -1 {
+		if rowEnd == -1 || colEnd == -1 {
 			continue
 		}
 		for _, r := range []rune{common.Positive, common.Negative, common.Neutral} {
@@ -296,33 +251,53 @@ func (cbs CBS) zeroInCol(game magnets.Game) {
 	}
 }
 
+func (cbs CBS) checker(game magnets.Game, msg string) {
+	// fmt.Printf("\n\n\n")
+	// fmt.Println("----> State coming out of", msg, "<-----")
+	// game.Print()
+	// cbs.print()
+	err := cbs.validate(game)
+	if err != nil {
+		game.Print()
+		cbs.print()
+		panic(err)
+	}
+}
+
 // Solve attempts to find a solution for the game, or gives up if it cannot.
 func Solve(game magnets.Game) {
 	cbs := new(game)
 
 	cbs.zeroInRow(game)
+	cbs.checker(game, "zeroInRow")
+
 	cbs.zeroInCol(game)
+	cbs.checker(game, "zeroInCol")
 
 	cbs.oddRowAllMagnets(game)
+	cbs.checker(game, "oddRowAllMagnets")
+
 	cbs.oddColAllMagnets(game)
+	cbs.checker(game, "oddColAllMagnets")
 
 	attempts := 0
 	for {
 		dirty = false
 
-		err := cbs.validate(game)
-		if err != nil {
-			fmt.Println(err)
-			game.Print()
-			cbs.print()
-			break
-		}
-
 		cbs.satisfied(game)
+		cbs.checker(game, "satisfied")
+
 		cbs.resolveNeighbors(game)
+		cbs.checker(game, "resolveNeighbors")
+
 		cbs.doubleSingle(game)
+		cbs.checker(game, "doubleSingle")
+
 		cbs.needAll(game)
+		cbs.checker(game, "needAll")
+
 		cbs.justOne(game)
+		cbs.checker(game, "justOne")
 
 		if !dirty {
 			break

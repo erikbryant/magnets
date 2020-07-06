@@ -63,6 +63,20 @@ func new(game magnets.Game) CBS {
 	return cbs
 }
 
+// getOnlyPossibility returns the only remaining value in the CBS, or if there
+// is not only one possibility, it panics.
+func (cbs CBS) getOnlyPossibility(row, col int) (r rune) {
+	if len(cbs[row][col]) != 1 {
+		msg := fmt.Sprintf("There is not only one possibility %v", cbs[row][col])
+		panic(msg)
+	}
+
+	for r = range cbs[row][col] {
+	}
+
+	return
+}
+
 // setFrame takes a coordinate and a polarity, sets that, and sets the other end
 // of the frame to correspond. This is different from the other implementations
 // in that it also keeps track of whether the board is dirty and updates the CBS.
@@ -94,6 +108,28 @@ func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	if len(cbs[row][col]) == 0 {
 		msg := fmt.Sprintf("All possibilities have been deleted from cbs %d, %d", row, col)
 		panic(msg)
+	}
+}
+
+// unsetPossibilityRow removes the given rune from the CBS' list of potential
+// cell values for an entire row.
+func (cbs CBS) unsetPossibilityRow(game magnets.Game, row int, r rune) {
+	for col := 0; col < game.Guess.Width(); col++ {
+		// Never remove the last possibility.
+		if len(cbs[row][col]) > 1 {
+			cbs.unsetPossibility(row, col, r)
+		}
+	}
+}
+
+// unsetPossibilityCol removes the given rune from the CBS' list of potential
+// cell values for an entire col.
+func (cbs CBS) unsetPossibilityCol(game magnets.Game, col int, r rune) {
+	for row := 0; row < game.Guess.Height(); row++ {
+		// Never remove the last possibility.
+		if len(cbs[row][col]) > 1 {
+			cbs.unsetPossibility(row, col, r)
+		}
 	}
 }
 
