@@ -57,14 +57,14 @@ func TestCells(t *testing.T) {
 	h := 5
 	l := New(w, h)
 
-	l.Set(0, 0, common.Positive)
-	l.Set(0, 1, common.Negative)
-	l.Set(0, 2, common.Neutral)
-	l.Set(0, 3, common.Neutral)
-	l.Set(1, 0, common.Negative)
-	l.Set(1, 1, common.Positive)
-	l.Set(2, 0, common.Positive)
-	l.Set(3, 0, common.Negative)
+	l.Set(0, 0, common.Positive, false)
+	l.Set(0, 1, common.Negative, false)
+	l.Set(0, 2, common.Neutral, false)
+	l.Set(0, 3, common.Neutral, false)
+	l.Set(1, 0, common.Negative, false)
+	l.Set(1, 1, common.Positive, false)
+	l.Set(2, 0, common.Positive, false)
+	l.Set(3, 0, common.Negative, false)
 
 	answer := 0
 	for range l.Cells() {
@@ -137,14 +137,14 @@ func TestCountRow(t *testing.T) {
 	h := 15
 	l := New(w, h)
 
-	l.Set(0, 0, common.Positive)
-	l.Set(0, 1, common.Negative)
-	l.Set(0, 2, common.Neutral)
-	l.Set(0, 3, common.Neutral)
-	l.Set(1, 0, common.Negative)
-	l.Set(1, 1, common.Positive)
-	l.Set(2, 0, common.Positive)
-	l.Set(3, 0, common.Negative)
+	l.Set(0, 0, common.Positive, false)
+	l.Set(0, 1, common.Negative, false)
+	l.Set(0, 2, common.Neutral, false)
+	l.Set(0, 3, common.Neutral, false)
+	l.Set(1, 0, common.Negative, false)
+	l.Set(1, 1, common.Positive, false)
+	l.Set(2, 0, common.Positive, false)
+	l.Set(3, 0, common.Negative, false)
 
 	testCases := []struct {
 		n         int
@@ -175,14 +175,14 @@ func TestCountCol(t *testing.T) {
 	h := 15
 	l := New(w, h)
 
-	l.Set(0, 0, common.Positive)
-	l.Set(0, 1, common.Negative)
-	l.Set(0, 2, common.Neutral)
-	l.Set(0, 3, common.Neutral)
-	l.Set(1, 0, common.Negative)
-	l.Set(1, 1, common.Positive)
-	l.Set(2, 0, common.Positive)
-	l.Set(3, 0, common.Negative)
+	l.Set(0, 0, common.Positive, false)
+	l.Set(0, 1, common.Negative, false)
+	l.Set(0, 2, common.Neutral, false)
+	l.Set(0, 3, common.Neutral, false)
+	l.Set(1, 0, common.Negative, false)
+	l.Set(1, 1, common.Positive, false)
+	l.Set(2, 0, common.Positive, false)
+	l.Set(3, 0, common.Negative, false)
 
 	testCases := []struct {
 		n         int
@@ -227,7 +227,7 @@ func TestGet(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		answer := l.Get(testCase.row, testCase.col)
+		answer := l.Get(testCase.row, testCase.col, false)
 		if answer != testCase.expected {
 			t.Errorf("ERROR: For %d, %d expected '%c' got '%c'", testCase.row, testCase.col, testCase.expected, answer)
 		}
@@ -251,25 +251,32 @@ func TestSet(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		l.Set(testCase.row, testCase.col, testCase.expected)
-		answer := l.Get(testCase.row, testCase.col)
+		l.Set(testCase.row, testCase.col, testCase.expected, false)
+		answer := l.Get(testCase.row, testCase.col, false)
 		if answer != testCase.expected {
 			t.Errorf("ERROR: For %d, %d expected '%c' got '%c'", testCase.row, testCase.col, testCase.expected, answer)
 		}
+	}
+
+	// Out of bounds
+	l.Set(-1, -1, common.Positive, false)
+	answer := l.Get(-1, -1, false)
+	if answer != common.Border {
+		t.Errorf("ERROR: For -1, -1 expected '%c' got '%c'", common.Border, answer)
 	}
 }
 
 func TestFloodFill(t *testing.T) {
 	l := New(2, 4)
 
-	l.Set(0, 0, common.Positive)
-	l.Set(0, 1, common.Negative)
-	l.Set(1, 0, common.Empty)
-	l.Set(1, 1, common.Empty)
-	l.Set(2, 0, common.Neutral)
-	l.Set(2, 1, common.Neutral)
-	l.Set(3, 0, common.Empty)
-	l.Set(3, 1, common.Empty)
+	l.Set(0, 0, common.Positive, false)
+	l.Set(0, 1, common.Negative, false)
+	l.Set(1, 0, common.Empty, false)
+	l.Set(1, 1, common.Empty, false)
+	l.Set(2, 0, common.Neutral, false)
+	l.Set(2, 1, common.Neutral, false)
+	l.Set(3, 0, common.Empty, false)
+	l.Set(3, 1, common.Empty, false)
 
 	l.FloodFill()
 
@@ -289,7 +296,7 @@ func TestFloodFill(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		answer := l.Get(testCase.row, testCase.col)
+		answer := l.Get(testCase.row, testCase.col, false)
 		if answer != testCase.expected {
 			t.Errorf("ERROR: For %d, %d expected '%c' got '%c'", testCase.row, testCase.col, testCase.expected, answer)
 		}
@@ -299,14 +306,14 @@ func TestFloodFill(t *testing.T) {
 func TestEqual(t *testing.T) {
 	l := New(2, 4)
 
-	l.Set(0, 0, common.Positive)
-	l.Set(0, 1, common.Negative)
-	l.Set(1, 0, common.Empty)
-	l.Set(1, 1, common.Empty)
-	l.Set(2, 0, common.Neutral)
-	l.Set(2, 1, common.Neutral)
-	l.Set(3, 0, common.Empty)
-	l.Set(3, 1, common.Empty)
+	l.Set(0, 0, common.Positive, false)
+	l.Set(0, 1, common.Negative, false)
+	l.Set(1, 0, common.Empty, false)
+	l.Set(1, 1, common.Empty, false)
+	l.Set(2, 0, common.Neutral, false)
+	l.Set(2, 1, common.Neutral, false)
+	l.Set(3, 0, common.Empty, false)
+	l.Set(3, 1, common.Empty, false)
 
 	l2 := New(2, 4)
 
@@ -320,5 +327,12 @@ func TestEqual(t *testing.T) {
 	expected = false
 	if answer != expected {
 		t.Errorf("ERROR: For l == l2 expected %t got %t", expected, answer)
+	}
+
+	l3 := New(4,4)
+	answer = l.Equal(l3)
+	expected = false
+	if answer != expected {
+		t.Errorf("ERROR: For l == l3 expected %t got %t", expected, answer)
 	}
 }

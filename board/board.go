@@ -68,13 +68,14 @@ func (l *Board) Cells(r ...rune) <-chan Coord {
 					continue
 				}
 				for _, val := range r {
-					if l.Get(row, col) == val {
+					if l.Get(row, col, false) == val {
 						c <- Coord{Row: row, Col: col}
 					}
 				}
 			}
 		}
 	}()
+
 	return c
 }
 
@@ -92,7 +93,7 @@ func (l *Board) Height() int {
 func (l *Board) CountRow(row int, r rune) int {
 	count := 0
 	for col := 0; col < l.width; col++ {
-		if l.cells[row][col] == r {
+		if l.Get(row, col, false) == r {
 			count++
 		}
 	}
@@ -111,16 +112,26 @@ func (l *Board) CountCol(col int, r rune) int {
 	return count
 }
 
-// Get returns the rune at the given row/col.
-func (l *Board) Get(row, col int) rune {
+// Get returns the value at row,col unless flip is true in which case it
+// returns the value at col,row.
+func (l *Board) Get(row, col int, flip bool) rune {
+	if flip {
+		row, col = col, row
+	}
+
 	if row < 0 || row >= l.height || col < 0 || col >= l.width {
 		return common.Border
 	}
 	return l.cells[row][col]
 }
 
-// Set sets the cell at row/col to the given rune.
-func (l *Board) Set(row, col int, r rune) {
+// Set sets the value at row,col unless flip is true in which case it
+// sets the value at col,row.
+func (l *Board) Set(row, col int, r rune, flip bool) {
+	if flip {
+		row, col = col, row
+	}
+
 	if row < 0 || row >= l.height || col < 0 || col >= l.width {
 		return
 	}
@@ -135,12 +146,12 @@ func (l *Board) FloodFill() {
 		changed = false
 		for cell := range l.Cells(common.Positive, common.Negative) {
 			row, col := cell.Unpack()
-			grid := l.Get(row, col)
+			grid := l.Get(row, col, false)
 			for _, mod := range Adjacents {
 				r := row + mod.Row
 				c := col + mod.Col
-				if l.Get(r, c) == common.Empty {
-					l.Set(r, c, common.Negate(grid))
+				if l.Get(r, c, false) == common.Empty {
+					l.Set(r, c, common.Negate(grid), false)
 					changed = true
 				}
 			}
@@ -156,7 +167,7 @@ func (l *Board) Equal(l2 Board) bool {
 
 	for cell := range l.Cells() {
 		row, col := cell.Unpack()
-		if l.Get(row, col) != l2.Get(row, col) {
+		if l.Get(row, col, false) != l2.Get(row, col, false) {
 			return false
 		}
 	}
