@@ -23,7 +23,8 @@ func (cbs CBS) justOne(game magnets.Game) {
 // to put a given polarity as there are needed.
 func (cbs CBS) satisfied(game magnets.Game) {
 	for _, category := range []rune{common.Positive, common.Negative, common.Neutral} {
-		// Row is satisfied in this category? Set those frames. Clear this possibility elsewhere.
+		// Row is satisfied in this category? Set those frames. Clear this
+		// possibility elsewhere.
 		for row := 0; row < game.Guess.Height(); row++ {
 			if rowNeeds(game, row, category) == cbs.rowHasSpaceForTotal(game, row, category) {
 				for col := 0; col < game.Guess.Width(); col++ {
@@ -31,14 +32,25 @@ func (cbs CBS) satisfied(game magnets.Game) {
 						if category == common.Neutral {
 							cbs.setFrame(game, row, col, category)
 						} else {
-							cbs.unsetPossibility(row, col, common.Neutral)
+							direction := game.GetFrame(row, col)
+							switch direction {
+							case common.Up:
+								cbs[row][col] = map[rune]bool{category: true}
+							case common.Down:
+								cbs[row][col] = map[rune]bool{category: true}
+							case common.Left:
+								cbs.unsetPossibility(game, row, col, common.Neutral)
+							case common.Right:
+								cbs.unsetPossibility(game, row, col, common.Neutral)
+							}
 						}
 					}
 				}
 			}
 		}
 
-		// Col is satisfied in this category? Set those frames. Clear this possibility elsewhere.
+		// Col is satisfied in this category? Set those frames. Clear this
+		// possibility elsewhere.
 		for col := 0; col < game.Guess.Width(); col++ {
 			if colNeeds(game, col, category) == cbs.colHasSpaceForTotal(game, col, category) {
 				for row := 0; row < game.Guess.Height(); row++ {
@@ -46,7 +58,17 @@ func (cbs CBS) satisfied(game magnets.Game) {
 						if category == common.Neutral {
 							cbs.setFrame(game, row, col, category)
 						} else {
-							cbs.unsetPossibility(row, col, common.Neutral)
+							direction := game.GetFrame(row, col)
+							switch direction {
+							case common.Up:
+								cbs[row][col] = map[rune]bool{category: true}
+							case common.Down:
+								cbs[row][col] = map[rune]bool{category: true}
+							case common.Left:
+								cbs.unsetPossibility(game, row, col, common.Neutral)
+							case common.Right:
+								cbs.unsetPossibility(game, row, col, common.Neutral)
+							}
 						}
 					}
 				}
@@ -115,10 +137,10 @@ func (cbs CBS) oddRowAllMagnets(game magnets.Game) {
 			}
 
 			for col := 0; col < game.Guess.Width(); col++ {
-				game.Guess.Set(row, col, polarity)
+				game.Guess.Set(row, col, polarity, false)
 				polarity = common.Negate(polarity)
-				cbs.unsetPossibility(row, col, polarity)
-				cbs.unsetPossibility(row, col, common.Neutral)
+				cbs.unsetPossibility(game, row, col, polarity)
+				cbs.unsetPossibility(game, row, col, common.Neutral)
 			}
 
 			dirty = true
@@ -147,10 +169,10 @@ func (cbs CBS) oddColAllMagnets(game magnets.Game) {
 			}
 
 			for row := 0; row < game.Guess.Height(); row++ {
-				game.Guess.Set(row, col, polarity)
+				game.Guess.Set(row, col, polarity, false)
 				polarity = common.Negate(polarity)
-				cbs.unsetPossibility(row, col, polarity)
-				cbs.unsetPossibility(row, col, common.Neutral)
+				cbs.unsetPossibility(game, row, col, polarity)
+				cbs.unsetPossibility(game, row, col, common.Neutral)
 			}
 
 			dirty = true
@@ -186,20 +208,6 @@ func (cbs CBS) doubleSingle(game magnets.Game) {
 // resolveNeighbors() propagates any constraint a cell has (like it can only be
 // negative) to its neighbor (which can then only be positive).
 func (cbs CBS) resolveNeighbors(game magnets.Game) {
-	for cell := range game.Guess.Cells() {
-		row, col := cell.Unpack()
-		rowEnd, colEnd := game.GetFrameEnd(row, col)
-		if rowEnd == -1 || colEnd == -1 {
-			continue
-		}
-		for _, r := range []rune{common.Positive, common.Negative, common.Neutral} {
-			// If r is missing from this end, its opposite cannot be in the other end.
-			if !cbs[row][col][r] {
-				cbs.unsetPossibility(rowEnd, colEnd, common.Negate(r))
-			}
-		}
-	}
-
 	// If a cell borders one whose polarity is already identified, update the cbs.
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
@@ -209,13 +217,13 @@ func (cbs CBS) resolveNeighbors(game magnets.Game) {
 		}
 		for _, adj := range board.Adjacents {
 			r, c := adj.Unpack()
-			switch game.Guess.Get(row+r, col+c) {
+			switch game.Guess.Get(row+r, col+c, false) {
 			case common.Positive:
-				cbs.unsetPossibility(row, col, common.Positive)
-				cbs.unsetPossibility(rowEnd, colEnd, common.Negative)
+				cbs.unsetPossibility(game, row, col, common.Positive)
+				cbs.unsetPossibility(game, rowEnd, colEnd, common.Negative)
 			case common.Negative:
-				cbs.unsetPossibility(row, col, common.Negative)
-				cbs.unsetPossibility(rowEnd, colEnd, common.Positive)
+				cbs.unsetPossibility(game, row, col, common.Negative)
+				cbs.unsetPossibility(game, rowEnd, colEnd, common.Positive)
 			}
 		}
 	}
@@ -228,9 +236,7 @@ func (cbs CBS) zeroInRow(game magnets.Game) {
 		for row := 0; row < game.Guess.Height(); row++ {
 			if game.CountRow(row, category) == 0 {
 				// Remove all instances of 'category' from the row in the cbs
-				for col := 0; col < game.Guess.Width(); col++ {
-					cbs.unsetPossibility(row, col, category)
-				}
+				cbs.unsetPossibilityRow(game, row, category)
 			}
 		}
 	}
@@ -243,9 +249,7 @@ func (cbs CBS) zeroInCol(game magnets.Game) {
 		for col := 0; col < game.Guess.Width(); col++ {
 			if game.CountCol(col, category) == 0 {
 				// Remove all instances of 'category' from the column in the cbs
-				for row := 0; row < game.Guess.Height(); row++ {
-					cbs.unsetPossibility(row, col, category)
-				}
+				cbs.unsetPossibilityCol(game, col, category)
 			}
 		}
 	}
@@ -284,7 +288,7 @@ func Solve(game magnets.Game) {
 	for {
 		dirty = false
 
-		cbs.satisfied(game)
+		// cbs.satisfied(game) // This is definitely buggy
 		cbs.checker(game, "satisfied")
 
 		cbs.resolveNeighbors(game)
@@ -293,7 +297,7 @@ func Solve(game magnets.Game) {
 		cbs.doubleSingle(game)
 		cbs.checker(game, "doubleSingle")
 
-		cbs.needAll(game)
+		// cbs.needAll(game) // This appears to be buggy
 		cbs.checker(game, "needAll")
 
 		cbs.justOne(game)

@@ -20,7 +20,7 @@ func TestJustOne(t *testing.T) {
 	dirty = false
 	cbs[0][0] = map[rune]bool{common.Positive: true}
 	cbs.justOne(game)
-	answer := game.Guess.Get(0, 0)
+	answer := game.Guess.Get(0, 0, false)
 	if answer != common.Positive {
 		t.Errorf("ERROR: Expected %c, got %c", common.Positive, answer)
 	}
@@ -29,7 +29,7 @@ func TestJustOne(t *testing.T) {
 	}
 
 	// This is the other end of that frame, so it should already be set.
-	answer = game.Guess.Get(1, 0)
+	answer = game.Guess.Get(1, 0, false)
 	if answer != common.Negative {
 		t.Errorf("ERROR: Expected %c, got %c", common.Negative, answer)
 	}
@@ -38,7 +38,7 @@ func TestJustOne(t *testing.T) {
 	dirty = false
 	cbs[1][0] = map[rune]bool{common.Negative: true}
 	cbs.justOne(game)
-	answer = game.Guess.Get(1, 0)
+	answer = game.Guess.Get(1, 0, false)
 	if answer != common.Negative {
 		t.Errorf("ERROR: Expected %c, got %c", common.Negative, answer)
 	}
