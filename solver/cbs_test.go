@@ -53,7 +53,7 @@ func TestNewWithWall(t *testing.T) {
 	if answer != 3 {
 		t.Errorf("ERROR: Expected 3, got %d", answer)
 	}
-	r := game.Guess.Get(6, 0)
+	r := game.Guess.Get(6, 0, false)
 	if r != common.Wall {
 		t.Errorf("ERROR: Expected Wall, got %c", r)
 	}
@@ -79,7 +79,7 @@ func TestSetFrame(t *testing.T) {
 	for _, testCase := range testCases {
 		dirty = false
 		cbs.setFrame(game, 0, 0, testCase.r)
-		answer := game.Guess.Get(0, 1)
+		answer := game.Guess.Get(0, 1, false)
 		if answer != testCase.expected {
 			t.Errorf("ERROR: Expected '%c' got '%c'", testCase.expected, answer)
 		}
@@ -103,7 +103,7 @@ func TestUnsetPossibility(t *testing.T) {
 	}
 
 	dirty = false
-	cbs.unsetPossibility(0, 0, common.Positive)
+	cbs.unsetPossibility(game, 0, 0, common.Positive)
 	answer = len(cbs[0][0])
 	if answer != 2 {
 		t.Errorf("ERROR: Expected 2, got %d", answer)
@@ -113,7 +113,7 @@ func TestUnsetPossibility(t *testing.T) {
 	}
 
 	dirty = false
-	cbs.unsetPossibility(0, 0, common.Positive)
+	cbs.unsetPossibility(game, 0, 0, common.Positive)
 	answer = len(cbs[0][0])
 	if answer != 2 {
 		t.Errorf("ERROR: Expected still to be 2, got %d", answer)
@@ -123,7 +123,7 @@ func TestUnsetPossibility(t *testing.T) {
 	}
 
 	dirty = false
-	cbs.unsetPossibility(0, 0, common.Negative)
+	cbs.unsetPossibility(game, 0, 0, common.Negative)
 	answer = len(cbs[0][0])
 	if answer != 1 {
 		t.Errorf("ERROR: Expected 1, got %d", answer)
@@ -435,7 +435,7 @@ func TestValidate(t *testing.T) {
 		t.Error("Error validating CBS", err)
 	}
 
-	game.Guess.Set(1, 1, common.Positive)
+	game.Guess.Set(1, 1, common.Positive, false)
 	err = cbs.validate(game)
 	if err == nil {
 		t.Error("validate was supposed to find an error but did not")
@@ -460,8 +460,8 @@ func TestValidate(t *testing.T) {
 		t.Error("Error validating CBS", err)
 	}
 
-	game.Guess.Set(0, 0, common.Negative)
-	game.Guess.Set(0, 1, common.Negative)
+	game.Guess.Set(0, 0, common.Negative, false)
+	game.Guess.Set(0, 1, common.Negative, false)
 
 	err = cbs.validate(game)
 	if err == nil {

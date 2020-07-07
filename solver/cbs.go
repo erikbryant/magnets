@@ -44,7 +44,7 @@ func new(game magnets.Game) CBS {
 
 	for cell := range game.Guess.Cells() {
 		row, col := cell.Unpack()
-		r := game.Guess.Get(row, col)
+		r := game.Guess.Get(row, col, false)
 		if r == common.Wall {
 			cbs[row][col] = map[rune]bool{r: true}
 			continue
@@ -83,23 +83,37 @@ func (cbs CBS) getOnlyPossibility(row, col int) (r rune) {
 func (cbs CBS) setFrame(game magnets.Game, row, col int, r rune) {
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
 
-	if r != game.Guess.Get(row, col) || common.Negate(r) != game.Guess.Get(rowEnd, colEnd) {
+	if r != game.Guess.Get(row, col, false) || common.Negate(r) != game.Guess.Get(rowEnd, colEnd, false) {
 		dirty = true
 	}
 
 	// Set this end of the frame.
-	game.Guess.Set(row, col, r)
+	game.Guess.Set(row, col, r, false)
 	cbs[row][col] = map[rune]bool{r: true}
 
 	// Set the other end of the frame.
-	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
+	game.Guess.Set(rowEnd, colEnd, common.Negate(r), false)
 	cbs[rowEnd][colEnd] = map[rune]bool{common.Negate(r): true}
 }
 
-// unsetPossibility removes the given rune from the CBS' list of potential
-// cell values.
-func (cbs CBS) unsetPossibility(row, col int, r rune) {
-	if val, ok := cbs[row][col][r]; ok && val {
+// decided returns true if the final value of the cell has been decided,
+// false otherwise.
+func (cbs CBS) decided(row, col int) bool {
+	return len(cbs[row][col]) == 1
+}
+
+// possibility returns true if the given rune is still a possibility, false otherwise.
+func (cbs CBS) possibility(row, col int, r rune) bool {
+	if val, ok := cbs[row][col][r]; ok {
+		return val
+	}
+
+	return false
+}
+
+// unsetHelper does the actual work of removing the given possibility from the cbs.
+func (cbs CBS) unsetHelper(row, col int, r rune) {
+	if cbs.possibility(row, col, r) {
 		dirty = true
 	}
 
@@ -111,13 +125,24 @@ func (cbs CBS) unsetPossibility(row, col int, r rune) {
 	}
 }
 
+// unsetPossibility removes the given rune from the CBS' list of potential
+// cell values.
+func (cbs CBS) unsetPossibility(game magnets.Game, row, col int, r rune) {
+	cbs.unsetHelper(row, col, r)
+	rowEnd, colEnd := game.GetFrameEnd(row, col)
+	if rowEnd == -1 || colEnd == -1 {
+		return
+	}
+	cbs.unsetHelper(rowEnd, colEnd, common.Negate(r))
+}
+
 // unsetPossibilityRow removes the given rune from the CBS' list of potential
 // cell values for an entire row.
 func (cbs CBS) unsetPossibilityRow(game magnets.Game, row int, r rune) {
 	for col := 0; col < game.Guess.Width(); col++ {
 		// Never remove the last possibility.
 		if len(cbs[row][col]) > 1 {
-			cbs.unsetPossibility(row, col, r)
+			cbs.unsetPossibility(game, row, col, r)
 		}
 	}
 }
@@ -128,7 +153,7 @@ func (cbs CBS) unsetPossibilityCol(game magnets.Game, col int, r rune) {
 	for row := 0; row < game.Guess.Height(); row++ {
 		// Never remove the last possibility.
 		if len(cbs[row][col]) > 1 {
-			cbs.unsetPossibility(row, col, r)
+			cbs.unsetPossibility(game, row, col, r)
 		}
 	}
 }
@@ -220,7 +245,7 @@ func (cbs CBS) colHasSpaceForTotal(game magnets.Game, col int, r rune) int {
 func (cbs CBS) rowHasSpaceForRemaining(game magnets.Game, row int, r rune) int {
 	count := 0
 	for col := 0; col < game.Guess.Width(); col++ {
-		if game.Guess.Get(row, col) == common.Empty && cbs[row][col][r] {
+		if game.Guess.Get(row, col, false) == common.Empty && cbs[row][col][r] {
 			count++
 		}
 	}
@@ -232,7 +257,7 @@ func (cbs CBS) rowHasSpaceForRemaining(game magnets.Game, row int, r rune) int {
 func (cbs CBS) colHasSpaceForRemaining(game magnets.Game, col int, r rune) int {
 	count := 0
 	for row := 0; row < game.Guess.Height(); row++ {
-		if game.Guess.Get(row, col) == common.Empty && cbs[row][col][r] {
+		if game.Guess.Get(row, col, false) == common.Empty && cbs[row][col][r] {
 			count++
 		}
 	}
@@ -248,10 +273,10 @@ func (cbs CBS) validate(game magnets.Game) error {
 	// Validate that there are no two identical signs next to each other.
 	for cell := range game.Guess.Cells(common.Positive, common.Negative) {
 		row, col := cell.Unpack()
-		guess := game.Guess.Get(row, col)
+		guess := game.Guess.Get(row, col, false)
 		for _, adj := range board.Adjacents {
 			r, c := adj.Unpack()
-			if game.Guess.Get(row+r, col+c) == guess {
+			if game.Guess.Get(row+r, col+c, false) == guess {
 				return fmt.Errorf("ERROR: '%c' sign at %d, %d is not consistent", guess, row, col)
 			}
 		}
@@ -259,7 +284,7 @@ func (cbs CBS) validate(game magnets.Game) error {
 
 	for cell := range game.Guess.Cells(common.Positive, common.Negative, common.Neutral) {
 		row, col := cell.Unpack()
-		r := game.Guess.Get(row, col)
+		r := game.Guess.Get(row, col, false)
 		// This is already solved, so the CBS should only have r in it.
 		for key := range cbs[row][col] {
 			if key != r {
