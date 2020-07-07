@@ -39,7 +39,7 @@ func (game *Game) setFrameMagnet(row, col int) {
 	// If there is a neighbor that is already set, follow its polarity instead.
 	for _, mod := range board.Adjacents {
 		modR, modC := mod.Unpack()
-		cell := game.grid.Get(row+modR, col+modC)
+		cell := game.grid.Get(row+modR, col+modC, false)
 		switch cell {
 		case common.Positive:
 			sign = common.Negate(cell)
@@ -61,34 +61,34 @@ func (game *Game) placeFrames() {
 	for {
 		for cell := range game.frames.Cells() {
 			row, col := cell.Unpack()
-			if game.frames.Get(row, col) != common.Empty {
+			if game.frames.Get(row, col, false) != common.Empty {
 				continue
 			}
 
 			orient := common.Empty
 
-			if game.frames.Get(row, col+1) == common.Empty {
-				if game.frames.Get(row+1, col) == common.Empty {
+			if game.frames.Get(row, col+1, false) == common.Empty {
+				if game.frames.Get(row+1, col, false) == common.Empty {
 					choices := []rune{common.Right, common.Down}
 					orient = choices[rand.Intn(len(choices))]
 				} else {
 					orient = common.Right
 				}
 			} else {
-				if game.frames.Get(row+1, col) == common.Empty {
+				if game.frames.Get(row+1, col, false) == common.Empty {
 					orient = common.Down
 				}
 			}
 
 			// Horizontal
 			if orient == common.Right {
-				game.frames.Set(row, col, common.Left)
-				game.frames.Set(row, col+1, common.Right)
+				game.frames.Set(row, col, common.Left, false)
+				game.frames.Set(row, col+1, common.Right, false)
 			}
 			// Vertical
 			if orient == common.Down {
-				game.frames.Set(row, col, common.Up)
-				game.frames.Set(row+1, col, common.Down)
+				game.frames.Set(row, col, common.Up, false)
+				game.frames.Set(row+1, col, common.Down, false)
 			}
 		}
 
@@ -97,10 +97,10 @@ func (game *Game) placeFrames() {
 		if (game.frames.Width()*game.frames.Height())%2 == 1 {
 			for cell := range game.frames.Cells() {
 				row, col := cell.Unpack()
-				if game.frames.Get(row, col) == common.Empty {
-					game.frames.Set(row, col, common.Wall)
-					game.grid.Set(row, col, common.Wall)
-					game.Guess.Set(row, col, common.Wall)
+				if game.frames.Get(row, col, false) == common.Empty {
+					game.frames.Set(row, col, common.Wall, false)
+					game.grid.Set(row, col, common.Wall, false)
+					game.Guess.Set(row, col, common.Wall, false)
 				}
 			}
 		}
@@ -113,8 +113,8 @@ func (game *Game) placeFrames() {
 		// Reset the layers and try again.
 		for cell := range game.frames.Cells() {
 			row, col := cell.Unpack()
-			game.frames.Set(row, col, common.Empty)
-			game.grid.Set(row, col, common.Empty)
+			game.frames.Set(row, col, common.Empty, false)
+			game.grid.Set(row, col, common.Empty, false)
 		}
 	}
 }
@@ -132,7 +132,7 @@ func (game *Game) placePieces() {
 			continue
 		}
 		row, col := frame.Unpack()
-		if game.grid.Get(row, col) != common.Empty {
+		if game.grid.Get(row, col, false) != common.Empty {
 			fmt.Printf("ERROR: Frame at %d, %d was not empty\n", row, col)
 			continue
 		}
@@ -142,7 +142,7 @@ func (game *Game) placePieces() {
 	// Place the magnets in the remaining frames.
 	for frame := range game.Frames() {
 		row, col := frame.Unpack()
-		if game.grid.Get(row, col) != common.Empty {
+		if game.grid.Get(row, col, false) != common.Empty {
 			continue
 		}
 		game.setFrameMagnet(row, col)

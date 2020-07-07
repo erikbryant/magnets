@@ -70,23 +70,23 @@ func TestSerialize(t *testing.T) {
 		rowNeg: []int{1, 0, 1, 1},
 	}
 
-	game.frames.Set(0, 0, common.Left)
-	game.frames.Set(0, 1, common.Right)
-	game.frames.Set(1, 0, common.Wall)
-	game.frames.Set(1, 1, common.Wall)
-	game.frames.Set(2, 0, common.Up)
-	game.frames.Set(2, 1, common.Up)
-	game.frames.Set(3, 0, common.Down)
-	game.frames.Set(3, 1, common.Down)
+	game.frames.Set(0, 0, common.Left, false)
+	game.frames.Set(0, 1, common.Right, false)
+	game.frames.Set(1, 0, common.Wall, false)
+	game.frames.Set(1, 1, common.Wall, false)
+	game.frames.Set(2, 0, common.Up, false)
+	game.frames.Set(2, 1, common.Up, false)
+	game.frames.Set(3, 0, common.Down, false)
+	game.frames.Set(3, 1, common.Down, false)
 
-	game.grid.Set(0, 0, common.Positive)
-	game.grid.Set(0, 1, common.Negative)
-	game.grid.Set(1, 0, common.Wall)
-	game.grid.Set(1, 1, common.Wall)
-	game.grid.Set(2, 0, common.Positive)
-	game.grid.Set(2, 1, common.Negative)
-	game.grid.Set(3, 0, common.Negative)
-	game.grid.Set(3, 1, common.Positive)
+	game.grid.Set(0, 0, common.Positive, false)
+	game.grid.Set(0, 1, common.Negative, false)
+	game.grid.Set(1, 0, common.Wall, false)
+	game.grid.Set(1, 1, common.Wall, false)
+	game.grid.Set(2, 0, common.Positive, false)
+	game.grid.Set(2, 1, common.Negative, false)
+	game.grid.Set(3, 0, common.Negative, false)
+	game.grid.Set(3, 1, common.Positive, false)
 
 	expected := "2x4:21,1011,12,1011,LR**TTBB"
 

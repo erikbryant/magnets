@@ -31,7 +31,7 @@ func (game *Game) Valid() bool {
 	// Validate that in frames, each frame has both of its ends.
 	for cell := range game.frames.Cells() {
 		row, col := cell.Unpack()
-		cell := game.frames.Get(row, col)
+		cell := game.frames.Get(row, col, false)
 		if cell == common.Wall {
 			// A wall has no other end.
 			continue
@@ -45,7 +45,7 @@ func (game *Game) Valid() bool {
 			fmt.Printf("ERROR: At frames %d, %d found unexpected '%c'\n", row, col, cell)
 			return false
 		}
-		adjacent := game.frames.Get(rowEnd, colEnd)
+		adjacent := game.frames.Get(rowEnd, colEnd, false)
 		if adjacent != common.Negate(cell) {
 			fmt.Printf("ERROR: At frames %d, %d expected '%c', found '%c'\n", rowEnd, colEnd, common.Negate(cell), adjacent)
 			return false
@@ -55,7 +55,7 @@ func (game *Game) Valid() bool {
 	// Validate that everything in grid is: positive, negative, neutral, or a wall.
 	for cell := range game.grid.Cells() {
 		row, col := cell.Unpack()
-		grid := game.grid.Get(row, col)
+		grid := game.grid.Get(row, col, false)
 		switch grid {
 		case common.Positive:
 		case common.Negative:
@@ -74,9 +74,9 @@ func (game *Game) Valid() bool {
 	// Validate that each frame has its expected values in grid.
 	for frame := range game.Frames() {
 		row, col := frame.Unpack()
-		grid := game.grid.Get(row, col)
+		grid := game.grid.Get(row, col, false)
 		rowEnd, colEnd := game.GetFrameEnd(row, col)
-		found := game.grid.Get(rowEnd, colEnd)
+		found := game.grid.Get(rowEnd, colEnd, false)
 		if common.Negate(grid) != found {
 			fmt.Printf("ERROR: wrong sign at %d, %d! Expected '%c' got '%c'\n", row, col, common.Negate(grid), found)
 			return false
@@ -86,10 +86,10 @@ func (game *Game) Valid() bool {
 	// Validate that there are no two identical signs next to each other.
 	for cell := range game.grid.Cells(common.Positive, common.Negative) {
 		row, col := cell.Unpack()
-		grid := game.grid.Get(row, col)
+		grid := game.grid.Get(row, col, false)
 		for _, adj := range board.Adjacents {
 			r, c := adj.Unpack()
-			if game.grid.Get(row+r, col+c) == grid {
+			if game.grid.Get(row+r, col+c, false) == grid {
 				fmt.Printf("ERROR: '%c' sign at %d, %d is not consistent\n", grid, row, col)
 				return false
 			}
@@ -101,12 +101,12 @@ func (game *Game) Valid() bool {
 
 // SetDomino sets both ends of a domino, given one end.
 func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
-	if l.Get(row, col) != common.Empty {
-		fmt.Printf("WARNING: assigning '%c' to non-empty cell %d, %d = '%c'\n", r, row, col, l.Get(row, col))
+	if l.Get(row, col, false) != common.Empty {
+		fmt.Printf("WARNING: assigning '%c' to non-empty cell %d, %d = '%c'\n", r, row, col, l.Get(row, col, false))
 	}
 
 	// Set this end of the frame.
-	l.Set(row, col, r)
+	l.Set(row, col, r, false)
 
 	// Set the other end of the frame.
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
@@ -114,22 +114,22 @@ func (game *Game) SetDomino(l board.Board, row, col int, r rune) {
 		// This was a wall. There is no other end.
 		return
 	}
-	if l.Get(rowEnd, colEnd) != common.Empty {
-		fmt.Printf("WARNING: assigning '%c' to non-empty sister cell %d, %d = '%c'\n", r, row, col, l.Get(rowEnd, colEnd))
+	if l.Get(rowEnd, colEnd, false) != common.Empty {
+		fmt.Printf("WARNING: assigning '%c' to non-empty sister cell %d, %d = '%c'\n", r, row, col, l.Get(rowEnd, colEnd, false))
 	}
-	l.Set(rowEnd, colEnd, common.Negate(r))
+	l.Set(rowEnd, colEnd, common.Negate(r), false)
 }
 
 // GetFrame returns the rune at this coordinate from the frames board.
 func (game *Game) GetFrame(row, col int) rune {
-	return game.frames.Get(row, col)
+	return game.frames.Get(row, col, false)
 }
 
 // GetFrameEnd returns the coordinates of the other end of the frame. If the cell is a wall (not a frame) it returns -1, -1.
 func (game *Game) GetFrameEnd(row, col int) (int, int) {
 	r := 0
 	c := 0
-	switch game.frames.Get(row, col) {
+	switch game.frames.Get(row, col, false) {
 	case common.Up:
 		r = 1
 		c = 0
@@ -145,7 +145,7 @@ func (game *Game) GetFrameEnd(row, col int) (int, int) {
 	case common.Wall:
 		return -1, -1
 	default:
-		fmt.Printf("ERROR: frame at %d, %d unexpected '%c'\n", row, col, game.frames.Get(row, col))
+		fmt.Printf("ERROR: frame at %d, %d unexpected '%c'\n", row, col, game.frames.Get(row, col, false))
 	}
 
 	return row + r, col + c
@@ -187,10 +187,10 @@ func (game *Game) Solved() bool {
 	// Validate that there are no two identical signs next to each other.
 	for cell := range game.Guess.Cells(common.Positive, common.Negative) {
 		row, col := cell.Unpack()
-		grid := game.Guess.Get(row, col)
+		grid := game.Guess.Get(row, col, false)
 		for _, adj := range board.Adjacents {
 			r, c := adj.Unpack()
-			if game.Guess.Get(row+r, col+c) == grid {
+			if game.Guess.Get(row+r, col+c, false) == grid {
 				return false
 			}
 		}

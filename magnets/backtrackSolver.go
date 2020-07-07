@@ -43,8 +43,8 @@ func (game *Game) exceedsRowLimits(row int) bool {
 // blankCell sets the cell and its other end to be empty.
 func (game *Game) blankCell(row, col int) {
 	rowEnd, colEnd := game.GetFrameEnd(row, col)
-	game.Guess.Set(row, col, common.Empty)
-	game.Guess.Set(rowEnd, colEnd, common.Empty)
+	game.Guess.Set(row, col, common.Empty, false)
+	game.Guess.Set(rowEnd, colEnd, common.Empty, false)
 }
 
 // setCell attempts to set the given cell (and its other end). If it is a legal move
@@ -54,23 +54,23 @@ func (game *Game) setCell(row, col int, r rune) bool {
 
 	// Should we be concerned about the polarity of the neighbors?
 	if common.Negate(r) != r {
-		if game.Guess.Get(row-1, col) == r {
+		if game.Guess.Get(row-1, col, false) == r {
 			return false
 		}
-		if game.Guess.Get(row, col-1) == r {
+		if game.Guess.Get(row, col-1, false) == r {
 			return false
 		}
 		// There is an optimization to also check the other end
 		// of the frame to see if it would be an invalid placement.
 		if row == rowEnd {
-			if game.Guess.Get(rowEnd-1, colEnd) == common.Negate(r) {
+			if game.Guess.Get(rowEnd-1, colEnd, false) == common.Negate(r) {
 				return false
 			}
 		}
 	}
 
-	game.Guess.Set(row, col, r)
-	game.Guess.Set(rowEnd, colEnd, common.Negate(r))
+	game.Guess.Set(row, col, r, false)
+	game.Guess.Set(rowEnd, colEnd, common.Negate(r), false)
 
 	// If this was an invalid move, undo it.
 	if game.exceedsRowLimits(row) || game.exceedsColLimits(col) {
@@ -98,7 +98,7 @@ func (game *Game) CountSolutions(row, col int) int {
 			return solutions
 		}
 
-		if game.frames.Get(row, col) == common.Up || game.frames.Get(row, col) == common.Left {
+		if game.frames.Get(row, col, false) == common.Up || game.frames.Get(row, col, false) == common.Left {
 			break
 		}
 		col++

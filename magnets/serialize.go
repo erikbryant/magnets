@@ -150,7 +150,8 @@ func (game *Game) Serialize() (string, bool) {
 
 	// LRTB*
 	for cell := range game.frames.Cells() {
-		switch game.frames.Get(cell.Unpack()) {
+		row, col := cell.Unpack()
+		switch game.frames.Get(row, col, false) {
 		case common.Left:
 			serial += "L"
 		case common.Right:
@@ -235,22 +236,22 @@ func Deserialize(s string) (Game, bool) {
 	for _, cell := range s {
 		switch cell {
 		case 'L':
-			game.frames.Set(row, col, common.Left)
+			game.frames.Set(row, col, common.Left, false)
 		case 'R':
-			game.frames.Set(row, col, common.Right)
+			game.frames.Set(row, col, common.Right, false)
 		case 'T':
-			game.frames.Set(row, col, common.Up)
+			game.frames.Set(row, col, common.Up, false)
 		case 'B':
-			game.frames.Set(row, col, common.Down)
+			game.frames.Set(row, col, common.Down, false)
 		case '*':
-			game.frames.Set(row, col, common.Wall)
-			game.grid.Set(row, col, common.Wall)
-			game.Guess.Set(row, col, common.Wall)
+			game.frames.Set(row, col, common.Wall, false)
+			game.grid.Set(row, col, common.Wall, false)
+			game.Guess.Set(row, col, common.Wall, false)
 		case '!':
-			game.frames.Set(row, col, common.Empty)
+			game.frames.Set(row, col, common.Empty, false)
 			return game, false
 		default:
-			game.frames.Set(row, col, common.Empty)
+			game.frames.Set(row, col, common.Empty, false)
 			return game, false
 		}
 		col++
