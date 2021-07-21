@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// append write the given content to the end of the given file.
 func append(file, content string) {
 	f, err := os.OpenFile(file, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -99,13 +100,13 @@ func deserializer(s string) {
 	if game.Solved() {
 		fmt.Println("Solved!", s)
 	} else {
-		fmt.Println("Could not solve!", s)
+		fmt.Println("\nCould not solve!", s)
 		game.Print()
 	}
 }
 
-// solvable loops forever trying random boards until it can solve one.
-func solvable(width, height int) {
+// findSolvableGame loops forever trying random boards until it can solve one.
+func findSolvableGame(width, height int) {
 	for {
 		game := magnets.New(width, height)
 		solver.Solve(game)
@@ -121,15 +122,21 @@ func solvable(width, height int) {
 func main() {
 	start := time.Now()
 
-	deserializer("2x3:12,111,21,111,LRLRLR")
+	// FAIL
+	// deserializer("14x4:22211111221122,5457,22121021221122,5466,TTLRTLRLRLRTLRBBLRBLRTTTTBTTTTTLRTTBBBBTBBBBBLRBBLRLRBLR")
+	// deserializer("4x4:1212,2022,1212,1212,TLRTBTTBTBBTBLRB")
 
-	// deserializer("2x4:12,0111,21,0111,LRLRLRLR")
-	// deserializer("2x5:12,00111,21,00111,TTBBLRTTBB")
+	deserializer("3x4:212,1202,122,2111,TTTBBBLRTLRB")
+	deserializer("10x2:0011101110,42,0011110110,33,TTTLRLRLRTBBBLRLRLRB")
+	deserializer("2x3:12,111,21,111,LRLRLR")
+	deserializer("4x12:6465,222221222220,6555,222222122211,TTTTBBBBTLRTBTTBTBBTBTTBTBBTBTTBTBBTBTTBTBBTBLRB")
+	deserializer("2x4:12,0111,21,0111,LRLRLRLR")
+	deserializer("2x5:12,00111,21,00111,TTBBLRTTBB")
 	deserializer("2x6:13,101011,22,100111,LRLRTTBBTTBB")
-	// deserializer("2x6:13,101101,22,101110,LRLRLRLRTTBB")
+	deserializer("2x6:13,101101,22,101110,LRLRLRLRTTBB")
 
 	// createCorpus()
-	// stressTest()
+	stressTest()
 
 	fmt.Println("Elapsed time:", time.Since(start))
 }
