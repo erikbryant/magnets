@@ -329,7 +329,7 @@ func TestEqual(t *testing.T) {
 		t.Errorf("ERROR: For l == l2 expected %t got %t", expected, answer)
 	}
 
-	l3 := New(4,4)
+	l3 := New(4, 4)
 	answer = l.Equal(l3)
 	expected = false
 	if answer != expected {
