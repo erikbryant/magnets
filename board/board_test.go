@@ -1,8 +1,9 @@
 package board
 
 import (
-	"github.com/erikbryant/magnets/common"
 	"testing"
+
+	"github.com/erikbryant/magnets/common"
 )
 
 func TestNew(t *testing.T) {

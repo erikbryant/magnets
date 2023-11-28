@@ -2,6 +2,7 @@ package solver
 
 import (
 	"fmt"
+
 	"github.com/erikbryant/magnets/board"
 	"github.com/erikbryant/magnets/common"
 	"github.com/erikbryant/magnets/magnets"
@@ -75,8 +76,6 @@ func (cbs CBS) satisfied(game magnets.Game) {
 			}
 		}
 	}
-
-	return
 }
 
 // needAll checks to see if the number of pos+neg needed is equal to the number

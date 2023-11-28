@@ -1,9 +1,10 @@
 package magnets
 
 import (
+	"testing"
+
 	"github.com/erikbryant/magnets/board"
 	"github.com/erikbryant/magnets/common"
-	"testing"
 )
 
 func TestCountToRune(t *testing.T) {

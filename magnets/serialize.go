@@ -2,9 +2,10 @@ package magnets
 
 import (
 	"fmt"
-	"github.com/erikbryant/magnets/common"
 	"strconv"
 	"strings"
+
+	"github.com/erikbryant/magnets/common"
 )
 
 // Saving and loading (serializing and de-serializing) of a game.

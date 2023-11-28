@@ -11,6 +11,7 @@ package magnets
 
 import (
 	"fmt"
+
 	"github.com/erikbryant/magnets/board"
 	"github.com/erikbryant/magnets/common"
 )

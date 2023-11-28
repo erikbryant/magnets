@@ -2,10 +2,11 @@ package magnets
 
 import (
 	"fmt"
-	"github.com/erikbryant/magnets/board"
-	"github.com/erikbryant/magnets/common"
 	"math/rand"
 	"time"
+
+	"github.com/erikbryant/magnets/board"
+	"github.com/erikbryant/magnets/common"
 )
 
 // Game contains all of the representations to hold state for a game of magnets.

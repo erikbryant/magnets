@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+
 	"github.com/erikbryant/magnets/common"
 )
 

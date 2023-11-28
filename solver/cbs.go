@@ -19,6 +19,7 @@ package solver
 
 import (
 	"fmt"
+
 	"github.com/erikbryant/magnets/board"
 	"github.com/erikbryant/magnets/common"
 	"github.com/erikbryant/magnets/magnets"
@@ -267,7 +268,7 @@ func (cbs CBS) colHasSpaceForRemaining(game magnets.Game, col int, r rune) int {
 // validate returns an error if the game or the CBS is inconsistent.
 func (cbs CBS) validate(game magnets.Game) error {
 	if !game.Valid() {
-		return fmt.Errorf("Invalid game board state detected")
+		return fmt.Errorf("invalid game board state detected")
 	}
 
 	// Validate that there are no two identical signs next to each other.

@@ -1,9 +1,10 @@
 package solver
 
 import (
+	"testing"
+
 	"github.com/erikbryant/magnets/common"
 	"github.com/erikbryant/magnets/magnets"
-	"testing"
 )
 
 func TestNewNoWall(t *testing.T) {
@@ -27,7 +28,7 @@ func TestNewNoWall(t *testing.T) {
 		t.Errorf("ERROR: Expected 3, got %d", answer)
 	}
 
-	game, ok = magnets.Deserialize("5x5:03232,22222,12322,32221,LRLRTTLRTBBTTBTTBBTBBLRB*")
+	_, ok = magnets.Deserialize("5x5:03232,22222,12322,32221,LRLRTTLRTBBTTBTTBBTBBLRB*")
 	if !ok {
 		t.Errorf("Unable to deserialize board")
 	}

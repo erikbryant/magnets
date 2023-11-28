@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/erikbryant/magnets/magnets"
-	"github.com/erikbryant/magnets/solver"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/erikbryant/magnets/magnets"
+	"github.com/erikbryant/magnets/solver"
 )
 
 // append write the given content to the end of the given file.

@@ -2,11 +2,12 @@ package solver
 
 import (
 	"bufio"
-	"github.com/erikbryant/magnets/common"
-	"github.com/erikbryant/magnets/magnets"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/erikbryant/magnets/common"
+	"github.com/erikbryant/magnets/magnets"
 )
 
 func TestJustOne(t *testing.T) {
