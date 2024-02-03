@@ -7,7 +7,7 @@ package solver
 // It first finds whether there are any walls on the playing grid. If there are,
 // it marks those in its representation as being walls.
 //
-// Then it marks the rest of the cells as having all of the possibilities (positive,
+// Then it marks the rest of the cells as having all the possibilities (positive,
 // negative, or neutral).
 //
 // As the solver works through the information it is given it eliminates possibilities
